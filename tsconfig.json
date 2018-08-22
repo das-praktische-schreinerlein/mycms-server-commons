@@ -5,12 +5,13 @@
     ],
     "compilerOptions": {
         "outDir": "./dist/",
-        "baseUrl": "src",
+        "baseUrl": "./src/",
         "sourceMap": true,
         "declaration": true,
         "moduleResolution": "node",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
+        "traceResolution": false,
         "target": "es5",
         "typeRoots": [
             "typings.d.ts",
