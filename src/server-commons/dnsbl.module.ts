@@ -1,5 +1,5 @@
-import express from 'express';
-import honeypot from 'honeypot';
+import * as express from 'express';
+import * as honeypot from 'honeypot';
 import {DnsBLConfig, FirewallConfig} from './firewall.commons';
 import {DnsBLCacheEntry, DnsBLQuery, GenericDnsBLModule} from './generic-dnsbl.module';
 import {DataCacheModule} from './datacache.module';

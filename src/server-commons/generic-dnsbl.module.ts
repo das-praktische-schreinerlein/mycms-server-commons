@@ -1,6 +1,6 @@
-import express from 'express';
+import * as express from 'express';
 import {DnsBLConfig, FirewallCommons, FirewallConfig} from './firewall.commons';
-import isIP from 'validator/lib/isIP';
+import * as isIP from 'validator/lib/isIP';
 import {CacheEntry, DataCacheModule} from './datacache.module';
 import {ServerLogUtils} from './serverlog.utils';
 

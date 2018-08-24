@@ -1,5 +1,5 @@
 import {Router} from 'js-data-express';
-import express from 'express';
+import * as express from 'express';
 import {CommonDocServerModule} from './cdoc-server.module';
 import {Adapter} from 'js-data-adapter';
 import {Mapper, utils} from 'js-data';
@@ -61,7 +61,7 @@ export abstract class CommonDocWriterServerModule<R extends CommonDocRecord, F e
             });
         app.route(apiPrefix + '/:locale' + '/' + apiId + 'write/:' + apiResolveParameterName)
             .all(function(req, res, next) {
-                if (req.method === 'PUT' && req.method === 'DEL') {
+                if (req.method === 'POST' || req.method === 'DEL') {
                     return next('not allowed');
                 }
                 return next();
@@ -94,7 +94,7 @@ export abstract class CommonDocWriterServerModule<R extends CommonDocRecord, F e
             });
         app.route(apiPrefix + '/:locale' + '/' + apiId + 'action')
             .all(function(req, res, next) {
-                if (req.method === 'PUT' && req.method === 'DEL') {
+                if (req.method === 'POST' || req.method === 'DEL') {
                     return next('not allowed');
                 }
                 return next();

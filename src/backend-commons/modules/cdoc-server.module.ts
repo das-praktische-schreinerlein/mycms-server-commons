@@ -1,5 +1,5 @@
 import {Router} from 'js-data-express';
-import express from 'express';
+import * as express from 'express';
 import {IdValidationRule} from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
 import {Facets} from '@dps/mycms-commons/dist/search-commons/model/container/facets';
 import {GenericSearchOptions} from '@dps/mycms-commons/dist/search-commons/services/generic-search.service';
@@ -31,6 +31,7 @@ export abstract class CommonDocServerModule<R extends CommonDocRecord, F extends
             }
 
             const cacheKey = cdocServerModule.generateCacheKey(id);
+            // @ts-ignore: is functional
             cache.get(cacheKey).then(value => {
                 if (value !== undefined) {
                     req[cdocServerModule.getApiId()] = Object.assign(cdocServerModule.getDataService().newRecord({}), value.details);
