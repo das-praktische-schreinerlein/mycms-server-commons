@@ -15,7 +15,7 @@ export interface SitemapConfig {
     fileBase: string;
     perPage: number;
     urlGenerator: any;
-    sdocSearchForm: {};
+    cdocSearchForm: {};
 }
 
 export class SitemapGeneratorModule {
