@@ -1,3 +1,4 @@
+/// <reference types="express" />
 import * as express from 'express';
 import { FirewallConfig } from './firewall.commons';
 export declare class FirewallModule {
