@@ -1,6 +1,6 @@
 {
   "name": "@dps/mycms-server-commons",
-  "version": "1.0.0-alpha",
+  "version": "1.0.0",
   "license": "Apache-2.0",
   "angular-cli": {},
   "main": "dist/",
@@ -10,7 +10,7 @@
   },
   "private": true,
   "dependencies": {
-    "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#1.0.0-alpha",
+    "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#1.0.0",
     "@risingstack/protect": "1.2.0",
     "axios": "0.17.1",
     "body-parser": "1.18.2",
