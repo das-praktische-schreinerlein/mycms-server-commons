@@ -1,7 +1,7 @@
 {
   "name": "@dps/mycms-server-commons",
   "version": "1.0.0-alpha",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "angular-cli": {},
   "main": "dist/",
   "types": "dist/",
