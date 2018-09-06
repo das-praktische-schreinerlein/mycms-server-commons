@@ -2,6 +2,22 @@
  
 # Versions
  
+## 1.1.0
+- improved dependencies
+
+### new features
+- none
+ 
+### improvements
+- bumped up and improved dependencies
+ 
+### bug fixes
+- none
+ 
+### breaking changes
+- none
+
+
 ## 1.0.0
 - initial version based on mytourbook-1.5.0
 

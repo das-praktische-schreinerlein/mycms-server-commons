@@ -1,4 +1,3 @@
-/// <reference types="express" />
 import * as express from 'express';
 import { IdValidationRule } from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
 import { CommonDocRecord } from '@dps/mycms-commons/dist/search-commons/model/records/cdoc-entity-record';

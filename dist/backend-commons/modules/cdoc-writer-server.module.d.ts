@@ -1,4 +1,3 @@
-/// <reference types="express" />
 import * as express from 'express';
 import { CommonDocServerModule } from './cdoc-server.module';
 import { CommonDocSearchForm } from '@dps/mycms-commons/dist/search-commons/model/forms/cdoc-searchform';

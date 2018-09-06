@@ -1,4 +1,3 @@
-/// <reference types="express" />
 import * as express from 'express';
 import { DnsBLConfig, FirewallConfig } from './firewall.commons';
 import { DnsBLCacheEntry, DnsBLQuery, GenericDnsBLModule } from './generic-dnsbl.module';
