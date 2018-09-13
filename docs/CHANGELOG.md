@@ -2,6 +2,22 @@
  
 # Versions
  
+## 2.1.0
+- none
+
+### new features
+- none
+ 
+### improvements
+- none
+ 
+### bug fixes
+- none
+ 
+### breaking changes
+- none
+
+
 ## 2.0.0
 - improved dependencies
 
