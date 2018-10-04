@@ -3,10 +3,10 @@
 # Versions
  
 ## 3.0.0
-- none
+- added playlist-export
 
 ### new features
-- none
+- backend: added CommonDocPlaylistServerModule
  
 ### improvements
 - none
