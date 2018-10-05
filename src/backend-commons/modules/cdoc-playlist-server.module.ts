@@ -28,9 +28,9 @@ export abstract class CommonDocPlaylistServerModule<R extends CommonDocRecord, F
             return;
         }
 
-        console.log('configure route ' + cdocPlaylistServerModule.getApiId() + 'm3uplaylist:', apiPrefix + '/:locale/'
-            + cdocPlaylistServerModule.getApiId() + 'm3uplaylist');
-        app.route(apiPrefix + '/:locale/' + cdocPlaylistServerModule.getApiId() + 'm3uplaylist')
+        console.log('configure route ' + cdocPlaylistServerModule.getApiId() + 'export/m3uplaylist:', apiPrefix + '/:locale/'
+            + cdocPlaylistServerModule.getApiId() + 'export/m3uplaylist');
+        app.route(apiPrefix + '/:locale/' + cdocPlaylistServerModule.getApiId() + 'export/m3uplaylist')
             .all(function(req, res, next) {
                 if (req.method !== 'GET') {
                     return next('not allowed');
@@ -41,7 +41,7 @@ export abstract class CommonDocPlaylistServerModule<R extends CommonDocRecord, F
                 const searchForm = cdocPlaylistServerModule.getDataService().newSearchForm(req.query);
                 if (!cdocPlaylistServerModule.isSearchFormValid(searchForm)) {
                     console.warn('form invalid');
-                    res.text();
+                    res.send('');
                     return next();
                 }
                 try {
@@ -63,7 +63,6 @@ export abstract class CommonDocPlaylistServerModule<R extends CommonDocRecord, F
                     }).catch(reason => {
                         console.error('m3uplaylist not fullfilled:', reason);
                         res.status(403);
-                        res.text('');
                         return next('not found');
                     });
                 } catch (error) {

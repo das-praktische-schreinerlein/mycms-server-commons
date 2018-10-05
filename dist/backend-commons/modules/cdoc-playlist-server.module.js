@@ -14,9 +14,9 @@ var CommonDocPlaylistServerModule = /** @class */ (function () {
             console.warn('SKIP route m3uplaylist NOT Enabled: playlistExportMaxM3uRecordAllowed=', exportConfig.maxAllowed);
             return;
         }
-        console.log('configure route ' + cdocPlaylistServerModule.getApiId() + 'm3uplaylist:', apiPrefix + '/:locale/'
-            + cdocPlaylistServerModule.getApiId() + 'm3uplaylist');
-        app.route(apiPrefix + '/:locale/' + cdocPlaylistServerModule.getApiId() + 'm3uplaylist')
+        console.log('configure route ' + cdocPlaylistServerModule.getApiId() + 'export/m3uplaylist:', apiPrefix + '/:locale/'
+            + cdocPlaylistServerModule.getApiId() + 'export/m3uplaylist');
+        app.route(apiPrefix + '/:locale/' + cdocPlaylistServerModule.getApiId() + 'export/m3uplaylist')
             .all(function (req, res, next) {
             if (req.method !== 'GET') {
                 return next('not allowed');
@@ -27,7 +27,7 @@ var CommonDocPlaylistServerModule = /** @class */ (function () {
             var searchForm = cdocPlaylistServerModule.getDataService().newSearchForm(req.query);
             if (!cdocPlaylistServerModule.isSearchFormValid(searchForm)) {
                 console.warn('form invalid');
-                res.text();
+                res.send('');
                 return next();
             }
             try {
@@ -48,7 +48,6 @@ var CommonDocPlaylistServerModule = /** @class */ (function () {
                 }).catch(function (reason) {
                     console.error('m3uplaylist not fullfilled:', reason);
                     res.status(403);
-                    res.text('');
                     return next('not found');
                 });
             }
