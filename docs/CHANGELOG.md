@@ -2,6 +2,22 @@
  
 # Versions
  
+## 4.0.0
+- bumped version up to be in sync with mycms
+
+### new features
+- none
+ 
+### improvements
+- none
+ 
+### bug fixes
+- none
+ 
+### breaking changes
+- none
+
+
 ## 3.0.0
 - added playlist-export
 
