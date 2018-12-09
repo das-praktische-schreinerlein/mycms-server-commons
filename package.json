@@ -1,15 +1,22 @@
 {
   "name": "@dps/mycms-server-commons",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "license": "Apache-2.0",
   "main": "dist/",
   "types": "dist/",
   "scripts": {
-    "build": "mv _node_modules node_modules & rm -fr dist && mkdir dist && tsc"
+    "build": "npm run prepare-build && tsc",
+    "prepare": "patch-package",
+    "prepare-build": "cross-os prepare-build-os",
+    "prepare-build-os": {
+      "darwin": "./node_modules/.bin/rimraf dist && ./node_modules/.bin/mkdirp dist",
+      "linux": "./node_modules/.bin/rimraf dist && ./node_modules/.bin/mkdirp dist",
+      "win32": "node_modules\\.bin\\rimraf dist && node_modules\\.bin\\mkdirp dist"
+    }
   },
   "private": true,
   "dependencies": {
-    "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#4.0.0",
+    "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#4.1.0",
     "@risingstack/protect": "~1.2.0",
     "body-parser": "~1.18.3",
     "compression": "~1.7.3",
@@ -45,7 +52,11 @@
     "@compodoc/compodoc": "~1.1.5",
     "@types/fluent-ffmpeg": "~2.1.6",
     "@types/node": "~8.10.26",
+    "cross-os": "~1.3.0",
     "enhanced-resolve": "~4.1.0",
+    "mkdirp": "~0.5.1",
+    "patch-package": "~5.1.1",
+    "rimraf": "~2.6.2",
     "ts-node": "~2.0.0",
     "tslint": "~4.5.1",
     "typescript": "~2.6.1"
