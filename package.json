@@ -12,7 +12,8 @@
       "darwin": "./node_modules/.bin/rimraf dist && ./node_modules/.bin/mkdirp dist",
       "linux": "./node_modules/.bin/rimraf dist && ./node_modules/.bin/mkdirp dist",
       "win32": "node_modules\\.bin\\rimraf dist && node_modules\\.bin\\mkdirp dist"
-    }
+    },
+    "test": "echo 'no tests'"
   },
   "private": true,
   "dependencies": {
