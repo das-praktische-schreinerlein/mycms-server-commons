@@ -198,10 +198,10 @@ var MediaManagerModule = /** @class */ (function () {
         return new Promise(function (resolve, reject) {
             mm.parseFile(musicPath)
                 .then(function (metadata) {
-                resolve(metadata);
+                return resolve(metadata);
             })
                 .catch(function (err) {
-                reject(err);
+                return reject(err);
             });
         });
     };
@@ -268,7 +268,7 @@ var MediaManagerModule = /** @class */ (function () {
             var command = ffmpeg(srcPath)
                 .on('error', function (err) {
                 console.error('An error occurred:', srcPath, destPath, err);
-                processorReject(err);
+                return processorReject(err);
             })
                 .on('progress', function (progress) {
                 //                        console.log('Processing ' + srcPath + ': ' + progress.percent + '% done @ '
@@ -278,7 +278,7 @@ var MediaManagerModule = /** @class */ (function () {
                 console.log('Finished processing:', srcPath, destPath, err);
                 var srcFileTime = fs.statSync(srcPath).mtime;
                 fs.utimesSync(destPath, srcFileTime, srcFileTime);
-                processorResolve(destPath);
+                return processorResolve(destPath);
             })
                 .output(destPath);
             command = ffmegCommandExtender(command);
@@ -329,17 +329,17 @@ var MediaManagerModule = /** @class */ (function () {
                             patterns.splice(-1)[0];
                             var fileDir = patterns.join('/');
                             mkdirp.sync(fileDir);
-                            commandExtender(media[destPath], destPath, processorResolve, processorReject);
+                            return commandExtender(media[destPath], destPath, processorResolve, processorReject);
                         });
                     });
                 };
                 for (var destPath in media) {
                     _loop_1(destPath);
                 }
-                Promise_serial(funcs, { parallelize: 1 }).then(function (arrayOfResults) {
-                    resolve(media);
+                return Promise_serial(funcs, { parallelize: 1 }).then(function (arrayOfResults) {
+                    return resolve(media);
                 }).catch(function (reason) {
-                    reject(reason);
+                    return reject(reason);
                 });
             });
         });

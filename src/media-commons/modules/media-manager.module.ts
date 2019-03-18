@@ -215,10 +215,10 @@ export class MediaManagerModule {
         return new Promise<IAudioMetadata>((resolve, reject) => {
             mm.parseFile(musicPath)
                 .then(metadata => {
-                    resolve(metadata);
+                    return resolve(metadata);
                 })
                 .catch((err) => {
-                    reject(err);
+                    return reject(err);
                 });
         });
     }
@@ -297,7 +297,7 @@ export class MediaManagerModule {
                 let command = ffmpeg(srcPath)
                     .on('error', function (err) {
                         console.error('An error occurred:', srcPath, destPath, err);
-                        processorReject(err);
+                        return processorReject(err);
                     })
                     .on('progress', function (progress) {
 //                        console.log('Processing ' + srcPath + ': ' + progress.percent + '% done @ '
@@ -307,7 +307,7 @@ export class MediaManagerModule {
                         console.log('Finished processing:', srcPath, destPath, err);
                         const srcFileTime = fs.statSync(srcPath).mtime;
                         fs.utimesSync(destPath, srcFileTime, srcFileTime);
-                        processorResolve(destPath);
+                        return processorResolve(destPath);
                     })
                     .output(destPath);
                 command = ffmegCommandExtender(command);
@@ -364,15 +364,15 @@ export class MediaManagerModule {
                             patterns.splice(-1)[0];
                             const fileDir = patterns.join('/');
                             mkdirp.sync(fileDir);
-                            commandExtender(media[destPath], destPath, processorResolve, processorReject);
+                            return commandExtender(media[destPath], destPath, processorResolve, processorReject);
                         });
                     });
                 }
 
-                Promise_serial(funcs, {parallelize: 1}).then(arrayOfResults => {
-                    resolve(media);
+                return Promise_serial(funcs, {parallelize: 1}).then(arrayOfResults => {
+                    return resolve(media);
                 }).catch(reason => {
-                    reject(reason);
+                    return reject(reason);
                 });
             });
         });
