@@ -17,6 +17,25 @@
 - none
 
 
+## 4.3.0
+- none
+
+### new features
+- none
+
+### improvements
+- none
+
+### bug fixes
+- none
+ 
+### breaking changes
+- none
+
+### known issues
+- none
+
+
 ## 4.2.0
 - bumped version up to be in sync with mycms
 
