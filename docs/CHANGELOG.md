@@ -18,7 +18,7 @@
 
 
 ## 4.3.0
-- none
+- bumped version up to be in sync with mycms
 
 ### new features
 - none
