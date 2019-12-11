@@ -24,7 +24,7 @@
 - none
 
 ### improvements
-- none
+- backend: added loadDetailsMode='details' for search of element by Id in cdocServerModule
 
 ### bug fixes
 - none

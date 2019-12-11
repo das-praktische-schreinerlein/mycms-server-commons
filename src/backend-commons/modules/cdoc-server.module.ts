@@ -126,7 +126,8 @@ export abstract class CommonDocServerModule<R extends CommonDocRecord, F extends
         const searchOptions: GenericSearchOptions = {
             showForm: false,
             loadTrack: false,
-            showFacets: false
+            showFacets: false,
+            loadDetailsMode: 'details'
         };
         const searchForm = this.dataService.newSearchForm({moreFilter: 'id:' + this.idValidationRule.sanitize(id)});
         const cacheKey = this.generateCacheKey(id);

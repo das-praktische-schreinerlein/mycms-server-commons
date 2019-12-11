@@ -102,7 +102,8 @@ var CommonDocServerModule = /** @class */ (function () {
         var searchOptions = {
             showForm: false,
             loadTrack: false,
-            showFacets: false
+            showFacets: false,
+            loadDetailsMode: 'details'
         };
         var searchForm = this.dataService.newSearchForm({ moreFilter: 'id:' + this.idValidationRule.sanitize(id) });
         var cacheKey = this.generateCacheKey(id);
