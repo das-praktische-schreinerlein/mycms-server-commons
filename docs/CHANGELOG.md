@@ -18,13 +18,14 @@
 
 
 ## 4.3.0
-- bumped version up to be in sync with mycms
+- improved build-process 
 
 ### new features
 - none
 
 ### improvements
 - backend: added loadDetailsMode='details' for search of element by Id in cdocServerModule
+- development: improved build-process - activated tests+coverage
 
 ### bug fixes
 - none

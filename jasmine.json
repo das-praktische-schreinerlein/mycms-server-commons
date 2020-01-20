@@ -1,0 +1,9 @@
+{
+    "spec_dir": "tsc-out/server-commons-spec",
+    "spec_files": [
+        "**/*spec.js"
+    ],
+    "helpers": [
+        "../../helpers/**/*.js"
+    ]
+}
