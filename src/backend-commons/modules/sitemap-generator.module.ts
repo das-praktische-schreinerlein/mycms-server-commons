@@ -1,4 +1,3 @@
-import {Router} from 'js-data-express';
 import * as sm from 'sitemap';
 import * as fs from 'fs';
 import {GenericSearchResult} from '@dps/mycms-commons/dist/search-commons/model/container/generic-searchresult';

@@ -1,4 +1,3 @@
-import {Router} from 'js-data-express';
 import * as express from 'express';
 import {IdValidationRule} from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
 import {Facets} from '@dps/mycms-commons/dist/search-commons/model/container/facets';

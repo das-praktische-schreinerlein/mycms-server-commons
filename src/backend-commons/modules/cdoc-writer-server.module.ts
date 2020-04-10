@@ -1,4 +1,3 @@
-import {Router} from 'js-data-express';
 import * as express from 'express';
 import {CommonDocServerModule} from './cdoc-server.module';
 import {Adapter} from 'js-data-adapter';
