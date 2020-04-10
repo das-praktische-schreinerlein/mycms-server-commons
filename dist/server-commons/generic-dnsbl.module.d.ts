@@ -4,7 +4,7 @@ import { CacheEntry, DataCacheModule } from './datacache.module';
 export declare enum DnsBLCacheEntryState {
     OK = 0,
     BLOCKED = 1,
-    NORESULT = 2,
+    NORESULT = 2
 }
 export interface DnsBLCacheEntry extends CacheEntry {
     ip: string;

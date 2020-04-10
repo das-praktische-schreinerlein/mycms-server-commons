@@ -13,6 +13,6 @@ export declare class MediaManagerModule {
     scaleImage(imagePath: string, resultPath: string, width: number): Promise<{}>;
     scaleImageJimp(imagePath: string, resultPath: string, width: number, flgIgnoreIfExists?: boolean): Promise<{}>;
     scaleImageGm(imagePath: string, resultPath: string, width: number, flgIgnoreIfExists?: boolean): Promise<{}>;
-    private doFfmegActionOnVideosFromMediaDir(baseDir, destDir, destSuffix, mediaTypes, flgIgnoreIfExists, ffmegCommandExtender);
-    private doActionOnFilesFromMediaDir(baseDir, destDir, destSuffix, mediaTypes, commandExtender);
+    private doFfmegActionOnVideosFromMediaDir;
+    private doActionOnFilesFromMediaDir;
 }
