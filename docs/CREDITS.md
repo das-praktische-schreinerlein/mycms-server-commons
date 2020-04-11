@@ -10,9 +10,7 @@ MyCMS uses a bunch of libraries and tools. Many thanx to the people behind these
     - [body-parser](https://www.npmjs.com/package/body-parser)
     - [compression](https://www.npmjs.com/package/compression)
     - [cors](https://www.npmjs.com/package/cors)
-    - [domino](https://www.npmjs.com/package/domino)
     - [express](https://www.npmjs.com/package/express)
-    - [http-proxy-middleware](https://www.npmjs.com/package/http-proxy-middleware)
 - security
     - [@risingstack/protect](https://www.npmjs.com/package/@risingstack/protect)
     - [express-ipfilter](https://www.npmjs.com/package/express-ipfilter)
@@ -21,7 +19,6 @@ MyCMS uses a bunch of libraries and tools. Many thanx to the people behind these
     - [request-ip](https://www.npmjs.com/package/request-ip)
 - data-framework
     - [js-data](https://www.npmjs.com/package/js-data)
-    - [js-data-express](https://www.npmjs.com/package/js-data-express)
 - storage-adapter
     - [redis](https://www.npmjs.com/package/redis)
 - media
@@ -29,16 +26,12 @@ MyCMS uses a bunch of libraries and tools. Many thanx to the people behind these
     - [fluent-ffmpeg](https://www.npmjs.com/package/fluent-ffmpeg)
     - [jimp](https://www.npmjs.com/package/jimp)
     - [music-metadata](https://www.npmjs.com/package/music-metadata)
-    - [vid-streamer](https://www.npmjs.com/package/vid-streamer)
 - sitemap
     - [sitemap](https://www.npmjs.com/package/sitemap)
     - [sitemap-stream-parser](https://www.npmjs.com/package/sitemap-stream-parser)
 - tools
-    - [core-js](https://www.npmjs.com/package/core-js)
     - [fs-extra](https://www.npmjs.com/package/fs-extra)
-    - [rxjs](https://www.npmjs.com/package/rxjs)
     - [validator](https://www.npmjs.com/package/validator)
-    - [xregexp](https://www.npmjs.com/package/xregexp)
 - cli
     - [minimist](https://www.npmjs.com/package/minimist)
  
