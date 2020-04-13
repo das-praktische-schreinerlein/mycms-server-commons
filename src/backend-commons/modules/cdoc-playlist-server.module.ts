@@ -21,7 +21,7 @@ export abstract class CommonDocPlaylistServerModule<R extends CommonDocRecord, F
         const exportConfig: CommonDocPlaylistExporterConfig = {
             maxAllowed: backendConfig['playlistExportMaxM3uRecordAllowed']
         };
-        if (! (exportConfig.maxAllowed > 0)) {
+        if (exportConfig.maxAllowed <= 0) {
             console.warn('SKIP route m3uplaylist NOT Enabled: playlistExportMaxM3uRecordAllowed=',
                 exportConfig.maxAllowed);
             return;

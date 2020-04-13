@@ -130,7 +130,6 @@ var MediaManagerModule = /** @class */ (function () {
             }
             var patterns = destPath.split(/[\/\\]/);
             patterns.splice(-1)[0];
-            var fileDir = patterns.join('/');
             var files = [];
             var tmpFileNameBase = 'tmpfile-' + (new Date().getTime()) + '-';
             ffmpeg(srcPath)

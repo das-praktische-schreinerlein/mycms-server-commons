@@ -27,8 +27,8 @@ var DataCacheModule = /** @class */ (function () {
                     try {
                         result = JSON.parse(data.toString());
                     }
-                    catch (er) {
-                        console.error('DataCacheModule: cant parse redisresult:', data);
+                    catch (error) {
+                        console.error('DataCacheModule: cant parse redisresult:', error, data);
                         return resolve();
                     }
                     return resolve(result);

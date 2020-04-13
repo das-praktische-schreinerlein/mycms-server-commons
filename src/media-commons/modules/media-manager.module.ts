@@ -144,7 +144,6 @@ export class MediaManagerModule {
 
                 const patterns = destPath.split(/[\/\\]/);
                 patterns.splice(-1)[0];
-                const fileDir = patterns.join('/');
                 let files = [];
                 const tmpFileNameBase = 'tmpfile-' + (new Date().getTime()) + '-';
                 ffmpeg(srcPath)

@@ -36,41 +36,25 @@ MyCMS uses a bunch of libraries and tools. Many thanx to the people behind these
     - [minimist](https://www.npmjs.com/package/minimist)
  
 ## datastores
-- [solr](http://lucene.apache.org/solr/)
-- [mysql](https://www.mysql.com/de/)
-- [sqlite](https://www.sqlite.org/index.html)
 - [redis](https://redis.io/)
  
 ## build-tools
 - base
     - [nodejs](https://nodejs.org)
     - [npm](https://www.npmjs.com/)
-- documentation
-    - [@compodoc/compodoc](https://www.npmjs.com/package/@compodoc/compodoc)
 - build-tools
+    - [codelyzer](https://www.npmjs.com/package/codelyzer)
     - [cross-os](https://www.npmjs.com/package/cross-os)
-    - [enhanced-resolve](https://www.npmjs.com/package/enhanced-resolve)
     - [mkdirp](https://www.npmjs.com/package/mkdirp)
     - [patch-package](https://www.npmjs.com/package/patch-package)
     - [rimraf](https://www.npmjs.com/package/rimraf)
     - [tslint](https://www.npmjs.com/package/tslint)
 - compiler
     - [@types](https://www.npmjs.com/search?q=%40Types)
-    - [ts-node](https://www.npmjs.com/package/ts-node)
-    - [tslint](https://www.npmjs.com/package/tslint)
     - [typescript](https://www.npmjs.com/package/typescript)
 
 ## basics imported from commons
 - data-framework
     - [js-data](https://www.npmjs.com/package/js-data)
-    - [js-data-http](https://www.npmjs.com/package/js-data-http)
-    - [js-data-sql](https://www.npmjs.com/package/js-data-sql)
-- maps
-    - [geo-coder](https://www.npmjs.com/package/geo-coder)
-- storage-adapter
-    - [itemsjs](https://www.npmjs.com/package/itemsjs)
-    - [knex](https://www.npmjs.com/package/knex)
 - tools
     - [promise-serial](https://www.npmjs.com/package/promise-serial)
-    - [rxjs](https://www.npmjs.com/package/rxjs)
-    - [xregexp](https://www.npmjs.com/package/xregexp)
