@@ -35,6 +35,22 @@
 - build: use peerDependencies
 
 
+## 4.5.0
+- bumped version up to be in sync with mycms-frontend-commons, mycms-commons
+
+### new features
+- none
+
+### improvements
+- none
+
+### bug fixes
+- none 
+ 
+### breaking changes
+- none
+
+
 ## 4.4.0
 - bumped version up to be in sync with mycms-frontend-commons
 
