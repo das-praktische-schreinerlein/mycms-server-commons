@@ -17,6 +17,24 @@
 - none
 
 
+## 5.0.0
+- upgraded all dev-dependencies to latest
+- build: use peerDependencies
+
+### new features
+- none
+
+### improvements
+- none
+
+### bug fixes
+- none 
+ 
+### breaking changes
+- build: upgraded all dev-dependencies to latest
+- build: use peerDependencies
+
+
 ## 4.5.0
 - bumped version up to be in sync with mycms-frontend-commons, mycms-commons
 

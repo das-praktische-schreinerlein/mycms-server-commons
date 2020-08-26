@@ -1,4 +1,3 @@
-import {Router} from 'js-data-express';
 import * as express from 'express';
 import {CommonDocRecord} from '@dps/mycms-commons/dist/search-commons/model/records/cdoc-entity-record';
 import {CommonDocSearchForm} from '@dps/mycms-commons/dist/search-commons/model/forms/cdoc-searchform';
@@ -22,7 +21,7 @@ export abstract class CommonDocPlaylistServerModule<R extends CommonDocRecord, F
         const exportConfig: CommonDocPlaylistExporterConfig = {
             maxAllowed: backendConfig['playlistExportMaxM3uRecordAllowed']
         };
-        if (! (exportConfig.maxAllowed > 0)) {
+        if (exportConfig.maxAllowed <= 0) {
             console.warn('SKIP route m3uplaylist NOT Enabled: playlistExportMaxM3uRecordAllowed=',
                 exportConfig.maxAllowed);
             return;

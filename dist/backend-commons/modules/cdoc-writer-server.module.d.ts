@@ -17,6 +17,6 @@ export declare abstract class CommonDocWriterServerModule<R extends CommonDocRec
     updateRecord(docSrc: {}): Promise<R>;
     doActionTag(actionTagFormSrc: {}): Promise<R>;
     addRecord(docSrc: {}): Promise<R>;
-    private mapRecord(docSrc);
-    private mapActionTagForm(actiontTagFormSrc);
+    private mapRecord;
+    private mapActionTagForm;
 }

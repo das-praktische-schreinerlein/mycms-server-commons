@@ -1,4 +1,3 @@
-import {Router} from 'js-data-express';
 import * as express from 'express';
 import {FirewallCommons, FirewallConfig} from './firewall.commons';
 import {ServerLogUtils} from './serverlog.utils';

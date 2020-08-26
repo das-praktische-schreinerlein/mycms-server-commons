@@ -1,4 +1,3 @@
-import {Router} from 'js-data-express';
 import {GenericSearchResult} from '@dps/mycms-commons/dist/search-commons/model/container/generic-searchresult';
 import {GenericSearchForm} from '@dps/mycms-commons/dist/search-commons/model/forms/generic-searchform';
 import {BaseEntityRecord} from '@dps/mycms-commons/dist/search-commons/model/records/base-entity-record';
