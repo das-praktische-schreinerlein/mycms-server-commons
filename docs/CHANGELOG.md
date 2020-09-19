@@ -20,7 +20,7 @@
 ## 5.1.0
 
 ### new features
-- none
+- backend: added new CommonDocMediaManagerModule
 
 ### improvements
 - none
