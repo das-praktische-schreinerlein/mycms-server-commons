@@ -15,7 +15,7 @@ var ConfigureServerModule = /** @class */ (function () {
         app.use(body_parser_1.urlencoded({ extended: true, limit: '1mb' })); // for parsing application/x-www-form-urlencoded
         // secure server
         var mycors = cors({
-            origin: backendConfig['corsOrigin'],
+            origin: backendConfig.corsOrigin,
             optionsSuccessStatus: 200,
             credentials: true
         });

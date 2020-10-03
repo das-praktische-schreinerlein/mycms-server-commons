@@ -10,7 +10,8 @@ import {CommonDocRecord} from '@dps/mycms-commons/dist/search-commons/model/reco
 import {CommonDocSearchForm} from '@dps/mycms-commons/dist/search-commons/model/forms/cdoc-searchform';
 import {CommonDocSearchResult} from '@dps/mycms-commons/dist/search-commons/model/container/cdoc-searchresult';
 import {CommonDocDataService} from '@dps/mycms-commons/dist/search-commons/services/cdoc-data.service';
-import {DataCacheModule} from '../../server-commons/datacache.module';
+import {CacheConfig, DataCacheModule} from '../../server-commons/datacache.module';
+import {CommonBackendConfigType, CommonKeywordMapperConfigType} from "./backend.commons";
 
 export abstract class CommonDocServerModule<R extends CommonDocRecord, F extends CommonDocSearchForm,
     S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>> {
@@ -21,7 +22,7 @@ export abstract class CommonDocServerModule<R extends CommonDocRecord, F extends
                                             CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>,
                                             CommonDocDataService<CommonDocRecord, CommonDocSearchForm,
                                                 CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>>>,
-                                        cache: DataCacheModule, backendConfig: {}) {
+                                        cache: DataCacheModule, backendConfig: any | CommonBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>) {
         // configure express
         app.param(cdocServerModule.getApiResolveParameterName(), function(req, res, next, id) {
             const idParam = (id || '');
@@ -58,7 +59,7 @@ export abstract class CommonDocServerModule<R extends CommonDocRecord, F extends
                     res.json();
                     return next();
                 }
-                res.json(doc.toSerializableJsonObj(backendConfig['apiAnonymizeMedia']));
+                res.json(doc.toSerializableJsonObj(backendConfig.apiAnonymizeMedia));
                 return next();
             });
 
@@ -102,7 +103,7 @@ export abstract class CommonDocServerModule<R extends CommonDocRecord, F extends
                             if (searchOptions.showFacets === false) {
                                 searchResult.facets = new Facets();
                             }
-                            res.json(searchResult.toSerializableJsonObj(backendConfig['apiAnonymizeMedia']));
+                            res.json(searchResult.toSerializableJsonObj(backendConfig.apiAnonymizeMedia));
                             return next();
                         }
                     ).catch(

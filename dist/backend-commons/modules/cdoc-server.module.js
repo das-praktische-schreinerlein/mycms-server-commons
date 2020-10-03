@@ -42,7 +42,7 @@ var CommonDocServerModule = /** @class */ (function () {
                 res.json();
                 return next();
             }
-            res.json(doc.toSerializableJsonObj(backendConfig['apiAnonymizeMedia']));
+            res.json(doc.toSerializableJsonObj(backendConfig.apiAnonymizeMedia));
             return next();
         });
         // use own wrapper for search
@@ -85,7 +85,7 @@ var CommonDocServerModule = /** @class */ (function () {
                     if (searchOptions_1.showFacets === false) {
                         searchResult.facets = new facets_1.Facets();
                     }
-                    res.json(searchResult.toSerializableJsonObj(backendConfig['apiAnonymizeMedia']));
+                    res.json(searchResult.toSerializableJsonObj(backendConfig.apiAnonymizeMedia));
                     return next();
                 }).catch(function searchError(error) {
                     console.error('error thrown: ', error);

@@ -11,6 +11,12 @@ import {CommonDocSearchResult} from '@dps/mycms-commons/dist/search-commons/mode
 import {CommonDocDataService} from '@dps/mycms-commons/dist/search-commons/services/cdoc-data.service';
 import {BaseImageRecordType} from '@dps/mycms-commons/dist/search-commons/model/records/baseimage-record';
 import {BaseVideoRecordType} from '@dps/mycms-commons/dist/search-commons/model/records/basevideo-record';
+import {
+    CommonImageBackendConfigType,
+    CommonKeywordMapperConfigType,
+    CommonVideoBackendConfigType
+} from "./backend.commons";
+import {CacheConfig} from "../../server-commons/datacache.module";
 
 export interface FileInfoType {
     created: Date;
@@ -42,7 +48,7 @@ export interface ProcessingOptions {
 export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F extends CommonDocSearchForm,
     S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>> {
     protected readonly dataService: D;
-    protected readonly backendConfig: {};
+    protected readonly backendConfig: CommonImageBackendConfigType<CommonKeywordMapperConfigType, CacheConfig> & CommonVideoBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>;
     protected readonly mediaManager: MediaManagerModule;
 
     public static mapDBResultOnFileInfoType(dbResult: any, records: DBFileInfoType[]): void {
@@ -71,7 +77,9 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
         }
     }
 
-    protected constructor(backendConfig, dataService: D, mediaManager: MediaManagerModule) {
+    protected constructor(backendConfig: CommonImageBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>
+        & CommonVideoBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>, dataService: D,
+                          mediaManager: MediaManagerModule) {
         this.dataService = dataService;
         this.backendConfig = backendConfig;
         this.mediaManager = mediaManager;
@@ -237,14 +245,14 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
     }
 
     public readExifForCommonDocImageRecord(tdocImage: BaseImageRecordType): Promise<{}> {
-        return this.mediaManager.readExifForImage(this.backendConfig['apiRoutePicturesStaticDir'] + '/'
-            + (this.backendConfig['apiRouteStoredPicturesResolutionPrefix'] || '') + 'full/' +  tdocImage.fileName);
+        return this.mediaManager.readExifForImage(this.backendConfig.apiRoutePicturesStaticDir + '/'
+            + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'full/' +  tdocImage.fileName);
     }
 
     public readMetadataForCommonDocVideoRecord(tdocVideo: BaseVideoRecordType): Promise<{}> {
         return new Promise<{}>((resolve, reject) => {
-            ffmpeg.ffprobe(this.backendConfig['apiRouteVideosStaticDir'] + '/'
-                + (this.backendConfig['apiRouteStoredVideosResolutionPrefix'] || '') + 'full/' +  tdocVideo.fileName,
+            ffmpeg.ffprobe(this.backendConfig.apiRouteVideosStaticDir + '/'
+                + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'full/' +  tdocVideo.fileName,
                 function(err, metadata) {
                     if (err) {
                         reject('error while reading video-metadata: ' + err);
@@ -256,10 +264,10 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
     }
 
     public scaleCommonDocImageRecord(tdocImage: BaseImageRecordType, width: number): Promise<{}> {
-        return this.mediaManager.scaleImage(this.backendConfig['apiRoutePicturesStaticDir'] + '/'
-            + (this.backendConfig['apiRouteStoredPicturesResolutionPrefix'] || '') + 'full/' +  tdocImage.fileName,
-            this.backendConfig['apiRoutePicturesStaticDir'] + '/'
-            + (this.backendConfig['apiRouteStoredPicturesResolutionPrefix'] || '') + 'x' + width + '/' +  tdocImage.fileName,
+        return this.mediaManager.scaleImage(this.backendConfig.apiRoutePicturesStaticDir + '/'
+            + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'full/' +  tdocImage.fileName,
+            this.backendConfig.apiRoutePicturesStaticDir + '/'
+            + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'x' + width + '/' +  tdocImage.fileName,
             width);
     }
 

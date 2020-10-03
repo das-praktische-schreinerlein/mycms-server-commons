@@ -170,14 +170,14 @@ var CommonDocMediaManagerModule = /** @class */ (function () {
         });
     };
     CommonDocMediaManagerModule.prototype.readExifForCommonDocImageRecord = function (tdocImage) {
-        return this.mediaManager.readExifForImage(this.backendConfig['apiRoutePicturesStaticDir'] + '/'
-            + (this.backendConfig['apiRouteStoredPicturesResolutionPrefix'] || '') + 'full/' + tdocImage.fileName);
+        return this.mediaManager.readExifForImage(this.backendConfig.apiRoutePicturesStaticDir + '/'
+            + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'full/' + tdocImage.fileName);
     };
     CommonDocMediaManagerModule.prototype.readMetadataForCommonDocVideoRecord = function (tdocVideo) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            ffmpeg.ffprobe(_this.backendConfig['apiRouteVideosStaticDir'] + '/'
-                + (_this.backendConfig['apiRouteStoredVideosResolutionPrefix'] || '') + 'full/' + tdocVideo.fileName, function (err, metadata) {
+            ffmpeg.ffprobe(_this.backendConfig.apiRouteVideosStaticDir + '/'
+                + (_this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'full/' + tdocVideo.fileName, function (err, metadata) {
                 if (err) {
                     reject('error while reading video-metadata: ' + err);
                 }
@@ -186,9 +186,9 @@ var CommonDocMediaManagerModule = /** @class */ (function () {
         });
     };
     CommonDocMediaManagerModule.prototype.scaleCommonDocImageRecord = function (tdocImage, width) {
-        return this.mediaManager.scaleImage(this.backendConfig['apiRoutePicturesStaticDir'] + '/'
-            + (this.backendConfig['apiRouteStoredPicturesResolutionPrefix'] || '') + 'full/' + tdocImage.fileName, this.backendConfig['apiRoutePicturesStaticDir'] + '/'
-            + (this.backendConfig['apiRouteStoredPicturesResolutionPrefix'] || '') + 'x' + width + '/' + tdocImage.fileName, width);
+        return this.mediaManager.scaleImage(this.backendConfig.apiRoutePicturesStaticDir + '/'
+            + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'full/' + tdocImage.fileName, this.backendConfig.apiRoutePicturesStaticDir + '/'
+            + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'x' + width + '/' + tdocImage.fileName, width);
     };
     CommonDocMediaManagerModule.prototype.batchProcessSearchResult = function (searchForm, cb, opts, processingOptions) {
         searchForm.perPage = processingOptions.parallel;

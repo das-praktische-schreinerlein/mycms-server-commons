@@ -2,16 +2,23 @@ import {AbstractCommand} from './abstract.command';
 import {utils} from 'js-data';
 import * as os from 'os';
 import {MediaManagerModule} from '../../media-commons/modules/media-manager.module';
+import {
+    CommonImageBackendConfigType,
+    CommonKeywordMapperConfigType,
+    CommonVideoBackendConfigType
+} from "../modules/backend.commons";
+import {CacheConfig} from "../../server-commons/datacache.module";
 
 export class CommonMediaManagerCommand implements AbstractCommand {
-    constructor (private backendConfig: {}) {}
+    constructor (private backendConfig: CommonImageBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>
+        & CommonVideoBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>) {}
 
     public process(argv): Promise<any> {
         const action = argv['action'];
         const importDir = argv['importDir'];
         const outputDir = argv['outputDir'];
         const force = argv['force'];
-        const mediaManagerModule = new MediaManagerModule(this.backendConfig['imageMagicAppPath'], os.tmpdir());
+        const mediaManagerModule = new MediaManagerModule(this.backendConfig.imageMagicAppPath, os.tmpdir());
 
         let promise: Promise<any>;
         switch (action) {

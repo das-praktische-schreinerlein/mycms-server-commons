@@ -1,5 +1,7 @@
 import * as express from 'express';
 import {json, urlencoded} from 'body-parser';
+import {CommonBackendConfigType, CommonKeywordMapperConfigType} from "../backend-commons/modules/backend.commons";
+import {CacheConfig} from "./datacache.module";
 
 const cors = require('cors');
 const helmet = require('helmet');
@@ -8,13 +10,14 @@ const protect = require('@risingstack/protect');
 const requestIp = require('request-ip');
 
 export class ConfigureServerModule {
-    public static configureServer(app: express.Application, backendConfig: {}) {
+    public static configureServer(app: express.Application,
+                                  backendConfig: any | CommonBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>) {
         // configure parsing
         app.use(json({limit: '1mb'})); // for parsing application/json
         app.use(urlencoded({ extended: true, limit: '1mb' })); // for parsing application/x-www-form-urlencoded
         // secure server
         const mycors = cors({
-            origin: backendConfig['corsOrigin'],
+            origin: backendConfig.corsOrigin,
             optionsSuccessStatus: 200,
             credentials: true
         });

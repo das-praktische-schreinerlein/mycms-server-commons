@@ -12,7 +12,7 @@ var CommonMediaManagerCommand = /** @class */ (function () {
         var importDir = argv['importDir'];
         var outputDir = argv['outputDir'];
         var force = argv['force'];
-        var mediaManagerModule = new media_manager_module_1.MediaManagerModule(this.backendConfig['imageMagicAppPath'], os.tmpdir());
+        var mediaManagerModule = new media_manager_module_1.MediaManagerModule(this.backendConfig.imageMagicAppPath, os.tmpdir());
         var promise;
         switch (action) {
             case 'convertVideosFromMediaDirToMP4':

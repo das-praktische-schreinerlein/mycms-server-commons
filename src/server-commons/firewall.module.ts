@@ -7,6 +7,23 @@ const IpDeniedError = require('express-ipfilter').IpDeniedError;
 
 export class FirewallModule {
     public static configureFirewall(app: express.Application, firewallConfig: FirewallConfig, filePathErrorDocs: string) {
+        this.configureIPBlacklist(app, firewallConfig, filePathErrorDocs);
+    }
+
+    public static configureLocalHostOnly(app: express.Application, firewallConfig: FirewallConfig, filePathErrorDocs: string) {
+        // TODO use localhotOnly
+    }
+
+    public static configureLocalNetOnly(app: express.Application, firewallConfig: FirewallConfig, filePathErrorDocs: string) {
+        // TODO use use localnetonly
+    }
+
+    public static configureIPWhitelist(app: express.Application, firewallConfig: FirewallConfig, filePathErrorDocs: string) {
+        // TODO use ip-whitelist
+    }
+
+    public static configureIPBlacklist(app: express.Application, firewallConfig: FirewallConfig, filePathErrorDocs: string) {
+        // use ip-blacklist
         app.use(IpFilter(firewallConfig.blackListIps));
         app.use(function(err, req, res, _next) {
             if (err instanceof IpDeniedError) {

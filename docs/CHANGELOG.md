@@ -23,7 +23,8 @@
 - backend: added new CommonDocMediaManagerModule
 
 ### improvements
-- none
+- backend: added and use ConfigurationTypes
+- backend: added extended firewall-config
 
 ### bug fixes
 - none 

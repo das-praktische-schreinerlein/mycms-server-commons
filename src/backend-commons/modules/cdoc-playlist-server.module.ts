@@ -7,6 +7,8 @@ import {
     CommonDocPlaylistExporter,
     CommonDocPlaylistExporterConfig
 } from '@dps/mycms-commons/dist/search-commons/services/cdoc-playlist-exporter';
+import {CommonBackendConfigType, CommonKeywordMapperConfigType} from "./backend.commons";
+import {CacheConfig} from "../../server-commons/datacache.module";
 
 export abstract class CommonDocPlaylistServerModule<R extends CommonDocRecord, F extends CommonDocSearchForm,
     S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>> {
@@ -16,10 +18,10 @@ export abstract class CommonDocPlaylistServerModule<R extends CommonDocRecord, F
                                                     CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>,
                                                     CommonDocDataService<CommonDocRecord, CommonDocSearchForm,
                                                         CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>>>,
-                                                backendConfig: {}) {
+                                                backendConfig: any | CommonBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>) {
         // use own wrapper for search
         const exportConfig: CommonDocPlaylistExporterConfig = {
-            maxAllowed: backendConfig['playlistExportMaxM3uRecordAllowed']
+            maxAllowed: backendConfig.playlistExportMaxM3uRecordAllowed
         };
         if (exportConfig.maxAllowed <= 0) {
             console.warn('SKIP route m3uplaylist NOT Enabled: playlistExportMaxM3uRecordAllowed=',

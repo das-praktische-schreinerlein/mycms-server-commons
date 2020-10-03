@@ -8,7 +8,7 @@ var CommonDocPlaylistServerModule = /** @class */ (function () {
     CommonDocPlaylistServerModule.configurePlaylistServerRoutes = function (app, apiPrefix, cdocPlaylistServerModule, backendConfig) {
         // use own wrapper for search
         var exportConfig = {
-            maxAllowed: backendConfig['playlistExportMaxM3uRecordAllowed']
+            maxAllowed: backendConfig.playlistExportMaxM3uRecordAllowed
         };
         if (exportConfig.maxAllowed <= 0) {
             console.warn('SKIP route m3uplaylist NOT Enabled: playlistExportMaxM3uRecordAllowed=', exportConfig.maxAllowed);

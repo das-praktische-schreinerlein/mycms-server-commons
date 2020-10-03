@@ -6,6 +6,8 @@ import { CommonDocSearchResult } from '@dps/mycms-commons/dist/search-commons/mo
 import { CommonDocDataService } from '@dps/mycms-commons/dist/search-commons/services/cdoc-data.service';
 import { BaseImageRecordType } from '@dps/mycms-commons/dist/search-commons/model/records/baseimage-record';
 import { BaseVideoRecordType } from '@dps/mycms-commons/dist/search-commons/model/records/basevideo-record';
+import { CommonImageBackendConfigType, CommonKeywordMapperConfigType, CommonVideoBackendConfigType } from "./backend.commons";
+import { CacheConfig } from "../../server-commons/datacache.module";
 export interface FileInfoType {
     created: Date;
     lastModified: Date;
@@ -32,10 +34,10 @@ export interface ProcessingOptions {
 }
 export declare abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F extends CommonDocSearchForm, S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>> {
     protected readonly dataService: D;
-    protected readonly backendConfig: {};
+    protected readonly backendConfig: CommonImageBackendConfigType<CommonKeywordMapperConfigType, CacheConfig> & CommonVideoBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>;
     protected readonly mediaManager: MediaManagerModule;
     static mapDBResultOnFileInfoType(dbResult: any, records: DBFileInfoType[]): void;
-    protected constructor(backendConfig: any, dataService: D, mediaManager: MediaManagerModule);
+    protected constructor(backendConfig: CommonImageBackendConfigType<CommonKeywordMapperConfigType, CacheConfig> & CommonVideoBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>, dataService: D, mediaManager: MediaManagerModule);
     abstract readMetadataForCommonDocRecord(tdoc: R): Promise<{}>;
     abstract updateDateOfCommonDocRecord(tdoc: R, date: Date): Promise<{}>;
     abstract scaleCommonDocRecordMediaWidth(tdoc: R, width: number): Promise<{}>;
