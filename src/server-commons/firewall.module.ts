@@ -1,6 +1,7 @@
 import * as express from 'express';
 import {FirewallCommons, FirewallConfig} from './firewall.commons';
 import {ServerLogUtils} from './serverlog.utils';
+import * as cookieParser from 'cookie-parser';
 
 const IpFilter = require('express-ipfilter').IpFilter;
 const IpDeniedError = require('express-ipfilter').IpDeniedError;
@@ -11,6 +12,8 @@ export class FirewallModule {
             this.configureLocalHostOnly(app, firewallConfig, filePathErrorDocs);
         } else if (firewallConfig.allowLocalNetOnly) {
             this.configureLocalNetOnly(app, firewallConfig, filePathErrorDocs);
+        } else {
+            console.log('CONFIGURE access-restriction: NONE');
         }
 
         if (FirewallCommons.countIpList(firewallConfig.whiteListIps) > 0) {
@@ -18,6 +21,10 @@ export class FirewallModule {
         }
         if (FirewallCommons.countIpList(firewallConfig.blackListIps) > 0) {
             this.configureIPBlacklist(app, firewallConfig, filePathErrorDocs);
+        }
+
+        if (firewallConfig.allowTokenCookieOnly) {
+            this.configureCookieOnly(app, firewallConfig, filePathErrorDocs);
         }
     }
 
@@ -30,7 +37,7 @@ export class FirewallModule {
                 ? ' with IP-Blacklist: ' + FirewallCommons.countIpList(firewallConfig.blackListIps)
                 : '')
         );
-        app.use(function(req,res,next){
+        app.use(function(req, res, next) {
             const ipOfSource = req.connection.remoteAddress;
             if (FirewallCommons.countIpList(firewallConfig.whiteListIps) > 0 &&
                 FirewallCommons.isInList(firewallConfig.whiteListIps, ipOfSource)) {
@@ -62,7 +69,7 @@ export class FirewallModule {
                 ? ' with IP-Blacklist: ' + FirewallCommons.countIpList(firewallConfig.blackListIps)
                 : '')
         );
-        app.use(function(req,res,next){
+        app.use(function(req, res, next) {
             const ipOfSource = req.connection.remoteAddress;
             if (FirewallCommons.countIpList(firewallConfig.whiteListIps) > 0 &&
                 FirewallCommons.isInList(firewallConfig.whiteListIps, ipOfSource)) {
@@ -88,7 +95,7 @@ export class FirewallModule {
     public static configureIPWhitelist(app: express.Application, firewallConfig: FirewallConfig, filePathErrorDocs: string) {
         console.log('CONFIGURE access-restriction IP-whitelist with '
             + FirewallCommons.countIpList(firewallConfig.whiteListIps) + ' ips');
-        app.use(function(req,res,next){
+        app.use(function(req, res, next) {
             const ipOfSource = req.connection.remoteAddress;
             if (FirewallCommons.isInList(firewallConfig.whiteListIps, ipOfSource)) {
                 return next();
@@ -108,11 +115,32 @@ export class FirewallModule {
         });
     }
 
+    public static configureCookieOnly(app: express.Application, firewallConfig: FirewallConfig, filePathErrorDocs: string) {
+        console.log('CONFIGURE additional access-restriction: TOKENCOOKIE only: ' + Object.keys(firewallConfig.allowTokenCookieOnly));
+        app.use(cookieParser());
+        app.use(function(req, res, next) {
+            const cookies = req.cookies;
+            const ipOfSource = req.connection.remoteAddress;
+            if (cookies) {
+                for (const cookieName in firewallConfig.allowTokenCookieOnly) {
+                    if (cookies[cookieName] &&
+                        firewallConfig.allowTokenCookieOnly[cookieName].includes(cookies[cookieName])) {
+                        return next();
+                    }
+                }
+            }
+
+            const err = new IpDeniedError('Only requests with tokenCookie: "' + Object.keys(firewallConfig.allowTokenCookieOnly) + '"' +
+                ' are allowed - Access denied to IP address: ' + ipOfSource, undefined);
+            return FirewallModule.renderError(firewallConfig, filePathErrorDocs, err, req, res, next);
+        })
+    }
+
     public static renderError(firewallConfig: FirewallConfig, filePathErrorDocs: string, err, req, res, _next) {
         if (err instanceof IpDeniedError) {
             console.warn('FirewallModule: BLOCKED blacklisted IP:' + ServerLogUtils.sanitizeLogMsg(req['clientIp']) +
                 ' URL:' + ServerLogUtils.sanitizeLogMsg(req.url) +
-            ' ERR:' + err.message);
+                ' ERR:' + err.message);
             return FirewallCommons.resolveBlocked(req, res, firewallConfig, filePathErrorDocs);
         }
         console.warn('request blocked', err);

@@ -7,6 +7,9 @@ export interface FirewallConfig {
     whiteListIps?: {};
     allowLocalHostOnly?: boolean;
     allowLocalNetOnly?: boolean;
+    allowTokenCookieOnly?: {
+        [key: string]: [string];
+    };
     dnsBLConfig: DnsBLConfig;
 }
 export interface DnsBLConfig {

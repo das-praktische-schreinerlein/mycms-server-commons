@@ -9,6 +9,9 @@ export interface FirewallConfig {
     whiteListIps?: {};
     allowLocalHostOnly?: boolean;
     allowLocalNetOnly?: boolean;
+    allowTokenCookieOnly?: {
+        [key: string]: [string];
+    }
     dnsBLConfig: DnsBLConfig;
 }
 
@@ -145,10 +148,8 @@ export class FirewallCommons {
         const ipV4 = FirewallCommons.prepareIpV4IP(ipOfSource);
 
         if (Array.isArray(list)) {
-            for (const ip of list) {
-                if (ip === ipOfSource || ip === ipV4) {
-                    return true;
-                }
+            if (list.includes(ipOfSource) || list.includes(ipV4)) {
+                return true;
             }
         } else {
             if (list[ipOfSource]) {

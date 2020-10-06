@@ -6,5 +6,6 @@ export declare class FirewallModule {
     static configureLocalNetOnly(app: express.Application, firewallConfig: FirewallConfig, filePathErrorDocs: string): void;
     static configureIPWhitelist(app: express.Application, firewallConfig: FirewallConfig, filePathErrorDocs: string): void;
     static configureIPBlacklist(app: express.Application, firewallConfig: FirewallConfig, filePathErrorDocs: string): void;
+    static configureCookieOnly(app: express.Application, firewallConfig: FirewallConfig, filePathErrorDocs: string): void;
     static renderError(firewallConfig: FirewallConfig, filePathErrorDocs: string, err: any, req: any, res: any, _next: any): void;
 }

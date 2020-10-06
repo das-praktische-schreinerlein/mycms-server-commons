@@ -98,11 +98,8 @@ var FirewallCommons = /** @class */ (function () {
     FirewallCommons.isInList = function (list, ipOfSource) {
         var ipV4 = FirewallCommons.prepareIpV4IP(ipOfSource);
         if (Array.isArray(list)) {
-            for (var _i = 0, list_1 = list; _i < list_1.length; _i++) {
-                var ip = list_1[_i];
-                if (ip === ipOfSource || ip === ipV4) {
-                    return true;
-                }
+            if (list.includes(ipOfSource) || list.includes(ipV4)) {
+                return true;
             }
         }
         else {

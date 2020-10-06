@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var firewall_commons_1 = require("./firewall.commons");
 var serverlog_utils_1 = require("./serverlog.utils");
+var cookieParser = require("cookie-parser");
 var IpFilter = require('express-ipfilter').IpFilter;
 var IpDeniedError = require('express-ipfilter').IpDeniedError;
 var FirewallModule = /** @class */ (function () {
@@ -14,11 +15,17 @@ var FirewallModule = /** @class */ (function () {
         else if (firewallConfig.allowLocalNetOnly) {
             this.configureLocalNetOnly(app, firewallConfig, filePathErrorDocs);
         }
+        else {
+            console.log('CONFIGURE access-restriction: NONE');
+        }
         if (firewall_commons_1.FirewallCommons.countIpList(firewallConfig.whiteListIps) > 0) {
             this.configureIPWhitelist(app, firewallConfig, filePathErrorDocs);
         }
         if (firewall_commons_1.FirewallCommons.countIpList(firewallConfig.blackListIps) > 0) {
             this.configureIPBlacklist(app, firewallConfig, filePathErrorDocs);
+        }
+        if (firewallConfig.allowTokenCookieOnly) {
+            this.configureCookieOnly(app, firewallConfig, filePathErrorDocs);
         }
     };
     FirewallModule.configureLocalHostOnly = function (app, firewallConfig, filePathErrorDocs) {
@@ -93,6 +100,25 @@ var FirewallModule = /** @class */ (function () {
         app.use(IpFilter(firewallConfig.blackListIps));
         app.use(function (err, req, res, _next) {
             FirewallModule.renderError(firewallConfig, filePathErrorDocs, err, req, res, _next);
+        });
+    };
+    FirewallModule.configureCookieOnly = function (app, firewallConfig, filePathErrorDocs) {
+        console.log('CONFIGURE access-restriction: TOKENCOOKIE only: ' + Object.keys(firewallConfig.allowTokenCookieOnly));
+        app.use(cookieParser());
+        app.use(function (req, res, next) {
+            var cookies = req.cookies;
+            var ipOfSource = req.connection.remoteAddress;
+            if (cookies) {
+                for (var cookieName in firewallConfig.allowTokenCookieOnly) {
+                    if (cookies[cookieName] &&
+                        firewallConfig.allowTokenCookieOnly[cookieName].includes(cookies[cookieName])) {
+                        return next();
+                    }
+                }
+            }
+            var err = new IpDeniedError('Only requests with tokenCookie: "' + Object.keys(firewallConfig.allowTokenCookieOnly) + '"' +
+                ' are allowed - Access denied to IP address: ' + ipOfSource, undefined);
+            return FirewallModule.renderError(firewallConfig, filePathErrorDocs, err, req, res, next);
         });
     };
     FirewallModule.renderError = function (firewallConfig, filePathErrorDocs, err, req, res, _next) {
