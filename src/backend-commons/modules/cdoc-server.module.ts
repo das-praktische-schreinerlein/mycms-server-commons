@@ -11,7 +11,7 @@ import {CommonDocSearchForm} from '@dps/mycms-commons/dist/search-commons/model/
 import {CommonDocSearchResult} from '@dps/mycms-commons/dist/search-commons/model/container/cdoc-searchresult';
 import {CommonDocDataService} from '@dps/mycms-commons/dist/search-commons/services/cdoc-data.service';
 import {CacheConfig, DataCacheModule} from '../../server-commons/datacache.module';
-import {CommonBackendConfigType, CommonKeywordMapperConfigType} from "./backend.commons";
+import {CommonBackendConfigType, CommonKeywordMapperConfigType} from './backend.commons';
 
 export abstract class CommonDocServerModule<R extends CommonDocRecord, F extends CommonDocSearchForm,
     S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>> {

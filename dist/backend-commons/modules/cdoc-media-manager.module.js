@@ -5,11 +5,13 @@ var bean_utils_1 = require("@dps/mycms-commons/dist/commons/utils/bean.utils");
 var readdirp = require("readdirp");
 var ffmpeg = require("fluent-ffmpeg");
 var Promise_serial = require("promise-serial");
+var fs = require("fs");
 var CommonDocMediaManagerModule = /** @class */ (function () {
-    function CommonDocMediaManagerModule(backendConfig, dataService, mediaManager) {
-        this.dataService = dataService;
+    function CommonDocMediaManagerModule(backendConfig, dataService, mediaManager, commonDocExportManager) {
         this.backendConfig = backendConfig;
+        this.dataService = dataService;
         this.mediaManager = mediaManager;
+        this.commonDocExportManager = commonDocExportManager;
     }
     CommonDocMediaManagerModule.mapDBResultOnFileInfoType = function (dbResult, records) {
         for (var i = 0; i <= dbResult.length; i++) {
@@ -36,6 +38,15 @@ var CommonDocMediaManagerModule = /** @class */ (function () {
             }
         }
     };
+    CommonDocMediaManagerModule.prototype.exportMediaFiles = function (searchForm, processingOptions) {
+        if (!fs.existsSync(processingOptions.exportBasePath)) {
+            return Promise.reject('exportBasePath not exists');
+        }
+        if (!fs.lstatSync(processingOptions.exportBasePath).isDirectory()) {
+            return Promise.reject('exportBasePath is no directory');
+        }
+        return this.commonDocExportManager.exportMediaFiles(searchForm, processingOptions);
+    };
     CommonDocMediaManagerModule.prototype.getFileExtensionToTypeMappings = function () {
         return {
             'jpg': 'IMAGE',
@@ -51,7 +62,7 @@ var CommonDocMediaManagerModule = /** @class */ (function () {
         var callback = function (tdoc) {
             return [me.readAndUpdateDateFromCommonDocRecord(tdoc)];
         };
-        return this.batchProcessSearchResult(searchForm, callback, {
+        return this.dataService.batchProcessSearchResult(searchForm, callback, {
             loadDetailsMode: undefined,
             loadTrack: false,
             showFacets: false,
@@ -65,7 +76,7 @@ var CommonDocMediaManagerModule = /** @class */ (function () {
                 me.scaleCommonDocRecordMediaWidth(tdoc, 300),
                 me.scaleCommonDocRecordMediaWidth(tdoc, 600)];
         };
-        return this.batchProcessSearchResult(searchForm, callback, {
+        return this.dataService.batchProcessSearchResult(searchForm, callback, {
             loadDetailsMode: undefined,
             loadTrack: false,
             showFacets: false,
@@ -189,61 +200,6 @@ var CommonDocMediaManagerModule = /** @class */ (function () {
         return this.mediaManager.scaleImage(this.backendConfig.apiRoutePicturesStaticDir + '/'
             + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'full/' + tdocImage.fileName, this.backendConfig.apiRoutePicturesStaticDir + '/'
             + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'x' + width + '/' + tdocImage.fileName, width);
-    };
-    CommonDocMediaManagerModule.prototype.batchProcessSearchResult = function (searchForm, cb, opts, processingOptions) {
-        searchForm.perPage = processingOptions.parallel;
-        searchForm.pageNum = Number.isInteger(searchForm.pageNum) ? searchForm.pageNum : 1;
-        var me = this;
-        var startTime = (new Date()).getTime();
-        var errorCount = 0;
-        var readNextPage = function () {
-            var startTime2 = (new Date()).getTime();
-            return me.dataService.search(searchForm, opts).then(function searchDone(searchResult) {
-                var promises = [];
-                for (var _i = 0, _a = searchResult.currentRecords; _i < _a.length; _i++) {
-                    var tdoc = _a[_i];
-                    promises = promises.concat(cb(tdoc));
-                }
-                var processResults = function () {
-                    var durWhole = ((new Date()).getTime() - startTime + 1) / 1000;
-                    var dur = ((new Date()).getTime() - startTime2 + 1) / 1000;
-                    var alreadyDone = searchForm.pageNum * searchForm.perPage;
-                    var performance = searchResult.currentRecords.length / dur;
-                    var performanceWhole = alreadyDone / durWhole;
-                    console.log('DONE processed page ' +
-                        searchForm.pageNum +
-                        ' [' + ((searchForm.pageNum - 1) * searchForm.perPage + 1) +
-                        '-' + alreadyDone + ']' +
-                        ' / ' + Math.round(searchResult.recordCount / searchForm.perPage + 1) +
-                        ' [' + searchResult.recordCount + ']' +
-                        ' in ' + Math.round(dur + 1) + ' (' + Math.round(durWhole + 1) + ') s' +
-                        ' with ' + Math.round(performance + 1) + ' (' + Math.round(performanceWhole + 1) + ') per s' +
-                        ' approximately ' + Math.round(((searchResult.recordCount - alreadyDone) / performance + 1) / 60) + 'min left');
-                    searchForm.pageNum++;
-                    if (searchForm.pageNum < (searchResult.recordCount / searchForm.perPage + 1)) {
-                        return readNextPage();
-                    }
-                    else {
-                        return js_data_1.utils.resolve('WELL DONE');
-                    }
-                };
-                return Promise.all(promises).then(function () {
-                    return processResults();
-                }).catch(function (reason) {
-                    errorCount = errorCount + 1;
-                    if (processingOptions.ignoreErrors > errorCount) {
-                        console.warn('SKIP ERROR: ' + errorCount + ' of possible ' + processingOptions.ignoreErrors, reason);
-                        return processResults();
-                    }
-                    console.error('UNSKIPPABLE ERROR: ' + errorCount + ' of possible ' + processingOptions.ignoreErrors, reason);
-                    return js_data_1.utils.reject(reason);
-                });
-            }).catch(function searchError(error) {
-                console.error('error thrown: ', error);
-                return js_data_1.utils.reject(error);
-            });
-        };
-        return readNextPage();
     };
     return CommonDocMediaManagerModule;
 }());

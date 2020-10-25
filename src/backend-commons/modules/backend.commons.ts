@@ -1,6 +1,6 @@
 import {FacetCacheUsageConfigurations} from '@dps/mycms-commons/dist/search-commons/services/sql-query.builder';
 import {FacetCacheConfiguration} from '@dps/mycms-commons/dist/facetcache-commons/model/facetcache.configuration';
-import {CacheConfig} from "../../server-commons/datacache.module";
+import {CacheConfig} from '../../server-commons/datacache.module';
 
 export interface CommonKeywordMapperConfigType {
     allowedKeywordPatterns: string[],

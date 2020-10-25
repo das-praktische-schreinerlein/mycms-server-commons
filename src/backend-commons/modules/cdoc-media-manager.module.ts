@@ -4,19 +4,27 @@ import * as readdirp from 'readdirp';
 import {MediaManagerModule} from '../../media-commons/modules/media-manager.module';
 import * as ffmpeg from 'fluent-ffmpeg';
 import * as Promise_serial from 'promise-serial';
-import {GenericSearchOptions} from '@dps/mycms-commons/dist/search-commons/services/generic-search.service';
 import {CommonDocRecord} from '@dps/mycms-commons/dist/search-commons/model/records/cdoc-entity-record';
 import {CommonDocSearchForm} from '@dps/mycms-commons/dist/search-commons/model/forms/cdoc-searchform';
 import {CommonDocSearchResult} from '@dps/mycms-commons/dist/search-commons/model/container/cdoc-searchresult';
-import {CommonDocDataService} from '@dps/mycms-commons/dist/search-commons/services/cdoc-data.service';
 import {BaseImageRecordType} from '@dps/mycms-commons/dist/search-commons/model/records/baseimage-record';
 import {BaseVideoRecordType} from '@dps/mycms-commons/dist/search-commons/model/records/basevideo-record';
 import {
     CommonImageBackendConfigType,
     CommonKeywordMapperConfigType,
     CommonVideoBackendConfigType
-} from "./backend.commons";
-import {CacheConfig} from "../../server-commons/datacache.module";
+} from './backend.commons';
+import {CacheConfig} from '../../server-commons/datacache.module';
+import {
+    ProcessingOptions
+} from '@dps/mycms-commons/dist/search-commons/services/cdoc-search.service';
+import {CommonDocDataService} from '@dps/mycms-commons/dist/search-commons/services/cdoc-data.service';
+import * as fs from 'fs';
+import {
+    CommonDocDocExportService,
+    ExportProcessingOptions
+} from '@dps/mycms-commons/dist/search-commons/services/cdoc-export.service';
+import {CommonDocPlaylistService} from '@dps/mycms-commons/dist/search-commons/services/cdoc-playlist.service';
 
 export interface FileInfoType {
     created: Date;
@@ -27,29 +35,30 @@ export interface FileInfoType {
     size: number;
     type: string;
 }
+
 export type FileSystemDBSyncMatchingType = 'EXIFDATE' | 'FILEDATE' | 'FILENAME' | 'FILEDIRANDNAME' | 'FILESIZE' | 'FILENAMEANDDATE'
     | 'SIMILARITY';
+
 export interface DBFileInfoType extends FileInfoType {
     id: string;
     matching: FileSystemDBSyncMatchingType;
     matchingDetails: string;
     matchingScore: number;
 }
+
 export interface FileSystemDBSyncType {
     file: FileInfoType;
     records: DBFileInfoType[];
 }
 
-export interface ProcessingOptions {
-    ignoreErrors: number;
-    parallel: number
-}
-
 export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F extends CommonDocSearchForm,
-    S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>> {
+    S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>,
+    P extends CommonDocPlaylistService<R>, M extends CommonDocDocExportService<R, F, S, D, P>> {
+    protected readonly backendConfig: CommonImageBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>
+        & CommonVideoBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>;
     protected readonly dataService: D;
-    protected readonly backendConfig: CommonImageBackendConfigType<CommonKeywordMapperConfigType, CacheConfig> & CommonVideoBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>;
     protected readonly mediaManager: MediaManagerModule;
+    protected readonly commonDocExportManager: M;
 
     public static mapDBResultOnFileInfoType(dbResult: any, records: DBFileInfoType[]): void {
         for (let i = 0; i <= dbResult.length; i++) {
@@ -79,10 +88,11 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
 
     protected constructor(backendConfig: CommonImageBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>
         & CommonVideoBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>, dataService: D,
-                          mediaManager: MediaManagerModule) {
-        this.dataService = dataService;
+                          mediaManager: MediaManagerModule, commonDocExportManager: M) {
         this.backendConfig = backendConfig;
+        this.dataService = dataService;
         this.mediaManager = mediaManager;
+        this.commonDocExportManager = commonDocExportManager;
     }
 
     public abstract readMetadataForCommonDocRecord(tdoc: R): Promise<{}>;
@@ -93,6 +103,17 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
 
     public abstract findCommonDocRecordsForFileInfo(baseDir: string, fileInfo: FileInfoType,
                                                     additionalMappings: {[key: string]: FileSystemDBSyncType}): Promise<DBFileInfoType[]>;
+
+    public exportMediaFiles(searchForm: F, processingOptions: ProcessingOptions & ExportProcessingOptions): Promise<{}> {
+        if (!fs.existsSync(processingOptions.exportBasePath)) {
+            return Promise.reject('exportBasePath not exists');
+        }
+        if (!fs.lstatSync(processingOptions.exportBasePath).isDirectory()) {
+            return Promise.reject('exportBasePath is no directory');
+        }
+
+        return this.commonDocExportManager.exportMediaFiles(searchForm, processingOptions);
+    }
 
 
     public getFileExtensionToTypeMappings(): {} {
@@ -111,7 +132,7 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
             return [me.readAndUpdateDateFromCommonDocRecord(tdoc)];
         };
 
-        return this.batchProcessSearchResult(searchForm, callback, {
+        return this.dataService.batchProcessSearchResult(searchForm, callback, {
             loadDetailsMode: undefined,
             loadTrack: false,
             showFacets: false,
@@ -127,7 +148,7 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
                 me.scaleCommonDocRecordMediaWidth(tdoc, 600)];
         };
 
-        return this.batchProcessSearchResult(searchForm, callback, {
+        return this.dataService.batchProcessSearchResult(searchForm, callback, {
             loadDetailsMode: undefined,
             loadTrack: false,
             showFacets: false,
@@ -271,67 +292,4 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
             width);
     }
 
-    protected batchProcessSearchResult(searchForm: F, cb: (tdoc: R) => Promise<{}>[], opts: GenericSearchOptions,
-                                       processingOptions: ProcessingOptions): Promise<{}> {
-        searchForm.perPage = processingOptions.parallel;
-        searchForm.pageNum = Number.isInteger(searchForm.pageNum) ? searchForm.pageNum : 1;
-
-        const me = this;
-        const startTime = (new Date()).getTime();
-        let errorCount = 0;
-        const readNextPage = function(): Promise<any> {
-            const startTime2 = (new Date()).getTime();
-            return me.dataService.search(searchForm, opts).then(
-                function searchDone(searchResult: S) {
-                    let promises: Promise<any>[] = [];
-                    for (const tdoc of searchResult.currentRecords) {
-                        promises = promises.concat(cb(tdoc));
-                    }
-
-                    const processResults = function(): Promise<any> {
-                        const durWhole = ((new Date()).getTime() - startTime + 1) / 1000 ;
-                        const dur = ((new Date()).getTime() - startTime2 + 1) / 1000;
-                        const alreadyDone = searchForm.pageNum * searchForm.perPage;
-                        const performance = searchResult.currentRecords.length / dur;
-                        const performanceWhole = alreadyDone / durWhole;
-                        console.log('DONE processed page ' +
-                            searchForm.pageNum +
-                            ' [' + ((searchForm.pageNum - 1) * searchForm.perPage + 1) +
-                            '-' + alreadyDone + ']' +
-                            ' / ' + Math.round(searchResult.recordCount / searchForm.perPage + 1) +
-                            ' [' + searchResult.recordCount + ']' +
-                            ' in ' + Math.round(dur + 1) + ' (' + Math.round(durWhole + 1) + ') s' +
-                            ' with ' + Math.round(performance + 1) + ' ('  + Math.round(performanceWhole + 1) + ') per s' +
-                            ' approximately ' + Math.round(((searchResult.recordCount - alreadyDone) / performance + 1) / 60) + 'min left'
-                        );
-                        searchForm.pageNum++;
-
-                        if (searchForm.pageNum < (searchResult.recordCount / searchForm.perPage + 1)) {
-                            return readNextPage();
-                        } else {
-                            return utils.resolve('WELL DONE');
-                        }
-                    };
-
-                    return Promise.all(promises).then(() => {
-                        return processResults();
-                    }).catch(reason => {
-                        errorCount = errorCount + 1;
-                        if (processingOptions.ignoreErrors > errorCount) {
-                            console.warn('SKIP ERROR: ' + errorCount + ' of possible ' + processingOptions.ignoreErrors, reason);
-                            return processResults();
-                        }
-
-                        console.error('UNSKIPPABLE ERROR: ' + errorCount + ' of possible ' + processingOptions.ignoreErrors, reason);
-                        return utils.reject(reason);
-                    });
-                }
-            ).catch(function searchError(error) {
-                console.error('error thrown: ', error);
-                return utils.reject(error);
-            });
-        };
-
-        return readNextPage();
-    }
 }

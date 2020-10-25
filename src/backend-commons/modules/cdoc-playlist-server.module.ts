@@ -7,8 +7,8 @@ import {
     CommonDocPlaylistExporter,
     CommonDocPlaylistExporterConfig
 } from '@dps/mycms-commons/dist/search-commons/services/cdoc-playlist-exporter';
-import {CommonBackendConfigType, CommonKeywordMapperConfigType} from "./backend.commons";
-import {CacheConfig} from "../../server-commons/datacache.module";
+import {CommonBackendConfigType, CommonKeywordMapperConfigType} from './backend.commons';
+import {CacheConfig} from '../../server-commons/datacache.module';
 
 export abstract class CommonDocPlaylistServerModule<R extends CommonDocRecord, F extends CommonDocSearchForm,
     S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>> {

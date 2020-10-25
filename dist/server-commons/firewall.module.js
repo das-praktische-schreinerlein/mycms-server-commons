@@ -103,7 +103,7 @@ var FirewallModule = /** @class */ (function () {
         });
     };
     FirewallModule.configureCookieOnly = function (app, firewallConfig, filePathErrorDocs) {
-        console.log('CONFIGURE access-restriction: TOKENCOOKIE only: ' + Object.keys(firewallConfig.allowTokenCookieOnly));
+        console.log('CONFIGURE additional access-restriction: TOKENCOOKIE only: ' + Object.keys(firewallConfig.allowTokenCookieOnly));
         app.use(cookieParser());
         app.use(function (req, res, next) {
             var cookies = req.cookies;

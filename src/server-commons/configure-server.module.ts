@@ -1,7 +1,7 @@
 import * as express from 'express';
 import {json, urlencoded} from 'body-parser';
-import {CommonBackendConfigType, CommonKeywordMapperConfigType} from "../backend-commons/modules/backend.commons";
-import {CacheConfig} from "./datacache.module";
+import {CommonBackendConfigType, CommonKeywordMapperConfigType} from '../backend-commons/modules/backend.commons';
+import {CacheConfig} from './datacache.module';
 
 const cors = require('cors');
 const helmet = require('helmet');

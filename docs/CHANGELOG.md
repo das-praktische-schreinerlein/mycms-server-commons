@@ -18,13 +18,17 @@
 
 
 ## 5.1.0
+- added new modules for media-management
+- added and use ConfigurationTypes
+- added extended firewall-config
 
 ### new features
-- backend: added new CommonDocMediaManagerModule
+- backend: added new modules for media-management (export, import)
 
 ### improvements
 - backend: added and use ConfigurationTypes
 - backend: added extended firewall-config
+- common: fixed imports
 
 ### bug fixes
 - none 

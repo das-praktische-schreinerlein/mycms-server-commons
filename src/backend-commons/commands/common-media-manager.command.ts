@@ -6,8 +6,8 @@ import {
     CommonImageBackendConfigType,
     CommonKeywordMapperConfigType,
     CommonVideoBackendConfigType
-} from "../modules/backend.commons";
-import {CacheConfig} from "../../server-commons/datacache.module";
+} from '../modules/backend.commons';
+import {CacheConfig} from '../../server-commons/datacache.module';
 
 export class CommonMediaManagerCommand implements AbstractCommand {
     constructor (private backendConfig: CommonImageBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>
