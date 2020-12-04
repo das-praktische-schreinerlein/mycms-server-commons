@@ -16,6 +16,10 @@ export interface MediaImportFileContainerType {
 export interface MediaImportFileNameContainerType {
     [key: string]: string;
 }
+export interface MediaImportFileCheckType {
+    readyToImport: boolean;
+    hint: string;
+}
 export interface MediaImportContainerType {
     FILES: MediaImportFileContainerType;
     ALBUMCOVERFILES: MediaImportFileNameContainerType;
@@ -44,10 +48,11 @@ export declare abstract class CommonDocMusicFileImportManager<R extends BaseMusi
     protected readonly baseDir: string;
     protected constructor(baseDir: string, mediaManager: MediaManagerModule);
     generateMusicDocRecordsFromMediaDir(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, baseDir: string, mappings: {}): Promise<R[]>;
-    createRecordsForData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, metadata: IAudioMetadata): {};
+    checkMusicFile(path: string, records: R[], container: MediaImportContainerType, fileStats: fs.Stats): Promise<MediaImportFileCheckType>;
+    checkMusicMediaData(path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, metadata: IAudioMetadata): Promise<MediaImportFileCheckType>;
+    createRecordsForMusicMediaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, metadata: IAudioMetadata): Promise<{}>;
     extractAndSetCoverFile(mdoc: R, metaData: IAudioMetadata): Promise<boolean>;
     checkAndUpdateAlbumCover(container: {}, path: string): void;
-    createRecordsForMusicMetaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, fileStats: fs.Stats, metaData: IAudioMetadata, mappings: {}): {};
     mapAudioMetaDataToMusicMediaData(mappings: {}, path: string, metaData: IAudioMetadata, mediaDataContainer: MusicMediaDataContainerType): void;
     mapMediaDataContainerToAudioMetaData(mappings: {}, mediaDataContainer: MusicMediaDataContainerType, metaData: IAudioMetadata): void;
     mapMediaDocToMediaDataRecordToMediaDataContainer(mappings: {}, mdoc: R, mediaDataContainer: MusicMediaDataContainerType): void;

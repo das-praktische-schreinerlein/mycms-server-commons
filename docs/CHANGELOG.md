@@ -2,21 +2,6 @@
  
 # Versions
  
-## Planned
-
-### new features
-- none
-
-### improvements
-- none
-
-### bug fixes
-- none 
- 
-### breaking changes
-- none
-
-
 ## 5.1.0
 - added new modules for media-management
 - added and use ConfigurationTypes

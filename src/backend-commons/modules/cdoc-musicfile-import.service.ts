@@ -28,6 +28,11 @@ export interface MediaImportFileNameContainerType {
     [key: string]: string;
 }
 
+export interface MediaImportFileCheckType {
+    readyToImport: boolean;
+    hint: string
+}
+
 export interface MediaImportContainerType {
     FILES: MediaImportFileContainerType;
     ALBUMCOVERFILES: MediaImportFileNameContainerType;
@@ -128,14 +133,48 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                     if (mediaTypes[extension] === 'AUDIO') {
                         funcs.push(function () {
                             return new Promise<string>((processorResolve) => {
-                                me.mediaManager.readMusicTagsForMusicFile(baseDir + '/' + path).then(metaData => {
-                                    me.createRecordsForMusicMetaData(mapper, responseMapper, path, records,
-                                        container, container.FILES[path]['stat'], metaData, normalizedMapping)
-                                    processorResolve(path);
-                                }).catch(err => {
-                                    console.error('error while reading file: ' + path, err);
-                                    processorResolve(path);
-                                });
+                                return me.checkMusicFile(path, records, container, container.FILES[path]['stat'])
+                                    .then(checkFileResult => {
+                                        if (!checkFileResult.readyToImport) {
+                                            console.warn('SKIPPING file: ' + path, checkFileResult);
+                                            processorResolve(path);
+                                            return Promise.resolve();
+                                        }
+
+                                        return me.mediaManager.readMusicTagsForMusicFile(baseDir + '/' + path)
+                                            .then(metaData => {
+                                                const mediaDataContainer: MusicMediaDataContainerType = {
+                                                    genreName: undefined,
+                                                    albumArtistName: undefined,
+                                                    albumGenreName: undefined,
+                                                    albumName: undefined,
+                                                    artistName: undefined,
+                                                    titleName: undefined,
+                                                    trackNr: undefined,
+                                                    releaseYear: undefined
+                                                }
+                                                me.mapAudioMetaDataToMusicMediaData(mappings, path, metaData, mediaDataContainer);
+
+                                                return me.checkMusicMediaData(path, records, container, mediaDataContainer,
+                                                    container.FILES[path]['stat'], metaData).then(checkMediaDataResult => {
+                                                    if (!checkMediaDataResult.readyToImport) {
+                                                        console.warn('SKIPPING file: ' + path, checkMediaDataResult);
+                                                        processorResolve(path);
+                                                        return Promise.resolve();
+                                                    }
+
+                                                    return me.createRecordsForMusicMediaData(mapper, responseMapper, path, records,
+                                                        container, mediaDataContainer, container.FILES[path]['stat'], metaData).then(() => {
+                                                        processorResolve(path);
+                                                        return Promise.resolve();
+                                                    });
+                                                });
+                                            });
+                                    }).catch(err => {
+                                        console.error('error while reading file: ' + path, err);
+                                        processorResolve(path);
+                                        return Promise.resolve();
+                                    });
                             });
                         });
                     } else if (mediaTypes[extension] === 'AUDIOCOVER') {
@@ -161,9 +200,26 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         });
     }
 
-    public createRecordsForData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[],
-                                container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType,
-                                fileStats: fs.Stats, metadata: IAudioMetadata): {} {
+    public checkMusicFile(path: string, records: R[], container: MediaImportContainerType, fileStats: fs.Stats):
+        Promise<MediaImportFileCheckType> {
+        return Promise.resolve({
+            readyToImport: true,
+            hint: 'file is valid'
+        });
+    }
+
+    public checkMusicMediaData(path: string, records: R[], container: MediaImportContainerType,
+                               mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, metadata: IAudioMetadata):
+        Promise<MediaImportFileCheckType> {
+        return Promise.resolve({
+            readyToImport: true,
+            hint: 'musicmetadata is valid'
+        });
+    }
+
+    public createRecordsForMusicMediaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[],
+                                          container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType,
+                                          fileStats: fs.Stats, metadata: IAudioMetadata): Promise<{}> {
         const dir = pathLib.dirname(path);
         const coverFile = container.ALBUMCOVERFILES[dir];
         const values = {
@@ -313,7 +369,7 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         records.push(mdoc);
         container.AUDIO[albumKey + mediaDataContainer.titleName] = mdoc;
 
-        return values;
+        return Promise.resolve(values);
     }
 
     public extractAndSetCoverFile(mdoc: R, metaData: IAudioMetadata): Promise<boolean> {
@@ -365,7 +421,7 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         return Promise.resolve(true);
     }
 
-    public checkAndUpdateAlbumCover(container: {}, path: string) {
+    public checkAndUpdateAlbumCover(container: {}, path: string): void {
         const dir = pathLib.dirname(path);
         const fileNameBase = pathLib.parse(path).name;
         if (container[dir]) {
@@ -381,24 +437,6 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         } else {
             container[dir] = path;
         }
-    }
-
-    public createRecordsForMusicMetaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string,
-                                         records: R[], container: MediaImportContainerType,
-                                         fileStats: fs.Stats, metaData: IAudioMetadata, mappings: {}): {} {
-        const mediaDataContainer: MusicMediaDataContainerType = {
-            genreName: undefined,
-            albumArtistName: undefined,
-            albumGenreName: undefined,
-            albumName: undefined,
-            artistName: undefined,
-            titleName: undefined,
-            trackNr: undefined,
-            releaseYear: undefined
-        }
-        this.mapAudioMetaDataToMusicMediaData(mappings, path, metaData, mediaDataContainer);
-
-        return this.createRecordsForData(mapper, responseMapper, path, records, container, mediaDataContainer, fileStats, metaData);
     }
 
     public mapAudioMetaDataToMusicMediaData(mappings: {}, path: string, metaData: IAudioMetadata,

@@ -72,12 +72,42 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
                     if (mediaTypes[extension] === 'AUDIO') {
                         funcs.push(function () {
                             return new Promise(function (processorResolve) {
-                                me.mediaManager.readMusicTagsForMusicFile(baseDir + '/' + path).then(function (metaData) {
-                                    me.createRecordsForMusicMetaData(mapper, responseMapper, path, records, container, container.FILES[path]['stat'], metaData, normalizedMapping);
-                                    processorResolve(path);
+                                return me.checkMusicFile(path, records, container, container.FILES[path]['stat'])
+                                    .then(function (checkFileResult) {
+                                    if (!checkFileResult.readyToImport) {
+                                        console.warn('SKIPPING file: ' + path, checkFileResult);
+                                        processorResolve(path);
+                                        return Promise.resolve();
+                                    }
+                                    return me.mediaManager.readMusicTagsForMusicFile(baseDir + '/' + path)
+                                        .then(function (metaData) {
+                                        var mediaDataContainer = {
+                                            genreName: undefined,
+                                            albumArtistName: undefined,
+                                            albumGenreName: undefined,
+                                            albumName: undefined,
+                                            artistName: undefined,
+                                            titleName: undefined,
+                                            trackNr: undefined,
+                                            releaseYear: undefined
+                                        };
+                                        me.mapAudioMetaDataToMusicMediaData(mappings, path, metaData, mediaDataContainer);
+                                        return me.checkMusicMediaData(path, records, container, mediaDataContainer, container.FILES[path]['stat'], metaData).then(function (checkMediaDataResult) {
+                                            if (!checkMediaDataResult.readyToImport) {
+                                                console.warn('SKIPPING file: ' + path, checkMediaDataResult);
+                                                processorResolve(path);
+                                                return Promise.resolve();
+                                            }
+                                            return me.createRecordsForMusicMediaData(mapper, responseMapper, path, records, container, mediaDataContainer, container.FILES[path]['stat'], metaData).then(function () {
+                                                processorResolve(path);
+                                                return Promise.resolve();
+                                            });
+                                        });
+                                    });
                                 }).catch(function (err) {
                                     console.error('error while reading file: ' + path, err);
                                     processorResolve(path);
+                                    return Promise.resolve();
                                 });
                             });
                         });
@@ -106,7 +136,19 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
             });
         });
     };
-    CommonDocMusicFileImportManager.prototype.createRecordsForData = function (mapper, responseMapper, path, records, container, mediaDataContainer, fileStats, metadata) {
+    CommonDocMusicFileImportManager.prototype.checkMusicFile = function (path, records, container, fileStats) {
+        return Promise.resolve({
+            readyToImport: true,
+            hint: 'file is valid'
+        });
+    };
+    CommonDocMusicFileImportManager.prototype.checkMusicMediaData = function (path, records, container, mediaDataContainer, fileStats, metadata) {
+        return Promise.resolve({
+            readyToImport: true,
+            hint: 'musicmetadata is valid'
+        });
+    };
+    CommonDocMusicFileImportManager.prototype.createRecordsForMusicMediaData = function (mapper, responseMapper, path, records, container, mediaDataContainer, fileStats, metadata) {
         var dir = pathLib.dirname(path);
         var coverFile = container.ALBUMCOVERFILES[dir];
         var values = {};
@@ -249,7 +291,7 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
         var mdoc = responseMapper.mapResponseDocument(mapper, values, {});
         records.push(mdoc);
         container.AUDIO[albumKey + mediaDataContainer.titleName] = mdoc;
-        return values;
+        return Promise.resolve(values);
     };
     CommonDocMusicFileImportManager.prototype.extractAndSetCoverFile = function (mdoc, metaData) {
         var mdocAudios = this.getAudiosFromRecord(mdoc);
@@ -314,20 +356,6 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
         else {
             container[dir] = path;
         }
-    };
-    CommonDocMusicFileImportManager.prototype.createRecordsForMusicMetaData = function (mapper, responseMapper, path, records, container, fileStats, metaData, mappings) {
-        var mediaDataContainer = {
-            genreName: undefined,
-            albumArtistName: undefined,
-            albumGenreName: undefined,
-            albumName: undefined,
-            artistName: undefined,
-            titleName: undefined,
-            trackNr: undefined,
-            releaseYear: undefined
-        };
-        this.mapAudioMetaDataToMusicMediaData(mappings, path, metaData, mediaDataContainer);
-        return this.createRecordsForData(mapper, responseMapper, path, records, container, mediaDataContainer, fileStats, metaData);
     };
     CommonDocMusicFileImportManager.prototype.mapAudioMetaDataToMusicMediaData = function (mappings, path, metaData, mediaDataContainer) {
         var genreName = name_utils_1.NameUtils.normalizeNames(metaData.common.genre && metaData.common.genre[0].length > 0
