@@ -9,7 +9,7 @@ For more information take a look at documentation:
 
 MyCMS-Server-Commons contains the services+utils for the server-part of an application as server and cli.
 
-Some amazing Features
+Some amazing features:
 - cli-skeleton
 - several plugin-modules for express: firewalls, serverlogging, dns-block, cache
 - support for media-management as convert, scale, rotate, video-thumbs...  for image, video, mp3
@@ -19,4 +19,4 @@ Some amazing Features
     - redirect-generator
     - playlist-server
     - dump export/import-server
-    - convert media-files (image, video, mp3) to CommonDoc-import-records
+    - scan media-files (image, video, mp3) to generate and sync CommonDoc-import-records
