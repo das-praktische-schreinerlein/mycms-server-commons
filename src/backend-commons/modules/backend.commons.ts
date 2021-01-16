@@ -30,6 +30,8 @@ export interface CommonBackendConfigType<K extends CommonKeywordMapperConfigType
     mapperConfig: K,
     cacheConfig: C,
     port: number,
+    bindIp: string,
+    tcpBacklog: number,
     corsOrigin: boolean
 }
 

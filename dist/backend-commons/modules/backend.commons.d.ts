@@ -27,6 +27,8 @@ export interface CommonBackendConfigType<K extends CommonKeywordMapperConfigType
     mapperConfig: K;
     cacheConfig: C;
     port: number;
+    bindIp: string;
+    tcpBacklog: number;
     corsOrigin: boolean;
 }
 export interface CommonImageBackendConfigType<K extends CommonKeywordMapperConfigType, C extends CacheConfig> extends CommonBackendConfigType<K, C> {

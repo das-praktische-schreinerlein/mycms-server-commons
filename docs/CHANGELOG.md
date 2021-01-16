@@ -2,6 +2,23 @@
  
 # Versions
  
+## 5.2.0
+- backend: added admin-server-support
+
+### new features
+- backend: added admin-command/server/cli-module with parameter-validation and configurable command-restrictions
+- backend: added abstract commands to use for db/webcall-commands and dbmigrate 
+
+### improvements
+- backend: added bindIp+tcpBacklog for backend-config
+
+### bug fixes
+- none
+ 
+### breaking changes
+- none
+
+
 ## 5.1.0
 - added new modules for media-management
 - added and use ConfigurationTypes
