@@ -49,7 +49,7 @@ export interface FileSystemDBSyncType {
     records: DBFileInfoType[];
 }
 
-export const RESOLUTION_SCREENSHOW = 'screenshow';
+export const RESOLUTION_SCREENSHOT = 'screenshot';
 export const RESOLUTION_THUMBNAIL = 'preview';
 
 export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F extends CommonDocSearchForm,
@@ -160,7 +160,7 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
     public scaleVideosToDefaultWidth(searchForm: F, processingOptions: ProcessingOptions): Promise<{}> {
         const me = this;
         const callback = function(tdoc: R): Promise<{}>[] {
-            return [me.scaleCommonDocRecordMediaWidth(tdoc, 200, RESOLUTION_SCREENSHOW),
+            return [me.scaleCommonDocRecordMediaWidth(tdoc, 200, RESOLUTION_SCREENSHOT),
                 me.scaleCommonDocRecordMediaWidth(tdoc, 200, RESOLUTION_THUMBNAIL),
                 me.scaleCommonDocRecordMediaWidth(tdoc, 600)];
         };
@@ -311,7 +311,7 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
 
     public scaleCommonDocVideoRecord(tdocVideo: BaseVideoRecordType, width: number, addResolutionType: string): Promise<{}> {
         switch (addResolutionType) {
-            case RESOLUTION_SCREENSHOW:
+            case RESOLUTION_SCREENSHOT:
                 return this.mediaManager.generateVideoScreenshot(this.backendConfig.apiRouteVideosStaticDir + '/'
                     + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'full/' +  tdocVideo.fileName,
                     this.backendConfig.apiRouteVideosStaticDir + '/'

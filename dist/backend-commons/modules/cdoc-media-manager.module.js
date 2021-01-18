@@ -6,7 +6,7 @@ var readdirp = require("readdirp");
 var ffmpeg = require("fluent-ffmpeg");
 var Promise_serial = require("promise-serial");
 var fs = require("fs");
-exports.RESOLUTION_SCREENSHOW = 'screenshow';
+exports.RESOLUTION_SCREENSHOT = 'screenshot';
 exports.RESOLUTION_THUMBNAIL = 'preview';
 var CommonDocMediaManagerModule = /** @class */ (function () {
     function CommonDocMediaManagerModule(backendConfig, dataService, mediaManager, commonDocExportManager) {
@@ -88,7 +88,7 @@ var CommonDocMediaManagerModule = /** @class */ (function () {
     CommonDocMediaManagerModule.prototype.scaleVideosToDefaultWidth = function (searchForm, processingOptions) {
         var me = this;
         var callback = function (tdoc) {
-            return [me.scaleCommonDocRecordMediaWidth(tdoc, 200, exports.RESOLUTION_SCREENSHOW),
+            return [me.scaleCommonDocRecordMediaWidth(tdoc, 200, exports.RESOLUTION_SCREENSHOT),
                 me.scaleCommonDocRecordMediaWidth(tdoc, 200, exports.RESOLUTION_THUMBNAIL),
                 me.scaleCommonDocRecordMediaWidth(tdoc, 600)];
         };
@@ -219,7 +219,7 @@ var CommonDocMediaManagerModule = /** @class */ (function () {
     };
     CommonDocMediaManagerModule.prototype.scaleCommonDocVideoRecord = function (tdocVideo, width, addResolutionType) {
         switch (addResolutionType) {
-            case exports.RESOLUTION_SCREENSHOW:
+            case exports.RESOLUTION_SCREENSHOT:
                 return this.mediaManager.generateVideoScreenshot(this.backendConfig.apiRouteVideosStaticDir + '/'
                     + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'full/' + tdocVideo.fileName, this.backendConfig.apiRouteVideosStaticDir + '/'
                     + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'screenshot' + '/' + tdocVideo.fileName, width, true);

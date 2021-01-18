@@ -30,7 +30,7 @@ export interface FileSystemDBSyncType {
     file: FileInfoType;
     records: DBFileInfoType[];
 }
-export declare const RESOLUTION_SCREENSHOW = "screenshow";
+export declare const RESOLUTION_SCREENSHOT = "screenshot";
 export declare const RESOLUTION_THUMBNAIL = "preview";
 export declare abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F extends CommonDocSearchForm, S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>, P extends CommonDocPlaylistService<R>, M extends CommonDocDocExportService<R, F, S, D, P>> {
     protected readonly backendConfig: CommonImageBackendConfigType<CommonKeywordMapperConfigType, CacheConfig> & CommonVideoBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>;
