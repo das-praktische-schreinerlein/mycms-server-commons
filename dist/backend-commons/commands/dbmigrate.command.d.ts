@@ -6,4 +6,5 @@ export declare class DbMigrateCommand extends CommonAdminCommand {
     };
     protected definePossibleActions(): string[];
     protected processCommandArgs(argv: {}): Promise<any>;
+    protected generateProcessArgs(options: any): any[];
 }

@@ -30,6 +30,8 @@ export interface FileSystemDBSyncType {
     file: FileInfoType;
     records: DBFileInfoType[];
 }
+export declare const RESOLUTION_SCREENSHOW = "screenshow";
+export declare const RESOLUTION_THUMBNAIL = "preview";
 export declare abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F extends CommonDocSearchForm, S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>, P extends CommonDocPlaylistService<R>, M extends CommonDocDocExportService<R, F, S, D, P>> {
     protected readonly backendConfig: CommonImageBackendConfigType<CommonKeywordMapperConfigType, CacheConfig> & CommonVideoBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>;
     protected readonly dataService: D;
@@ -39,7 +41,7 @@ export declare abstract class CommonDocMediaManagerModule<R extends CommonDocRec
     protected constructor(backendConfig: CommonImageBackendConfigType<CommonKeywordMapperConfigType, CacheConfig> & CommonVideoBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>, dataService: D, mediaManager: MediaManagerModule, commonDocExportManager: M);
     abstract readMetadataForCommonDocRecord(tdoc: R): Promise<{}>;
     abstract updateDateOfCommonDocRecord(tdoc: R, date: Date): Promise<{}>;
-    abstract scaleCommonDocRecordMediaWidth(tdoc: R, width: number): Promise<{}>;
+    abstract scaleCommonDocRecordMediaWidth(tdoc: R, width: number, addResolutionType?: string): Promise<{}>;
     abstract findCommonDocRecordsForFileInfo(baseDir: string, fileInfo: FileInfoType, additionalMappings: {
         [key: string]: FileSystemDBSyncType;
     }): Promise<DBFileInfoType[]>;
@@ -47,6 +49,7 @@ export declare abstract class CommonDocMediaManagerModule<R extends CommonDocRec
     getFileExtensionToTypeMappings(): {};
     readAndUpdateMediaDates(searchForm: F, processingOptions: ProcessingOptions): Promise<{}>;
     scaleImagesToDefaultWidth(searchForm: F, processingOptions: ProcessingOptions): Promise<{}>;
+    scaleVideosToDefaultWidth(searchForm: F, processingOptions: ProcessingOptions): Promise<{}>;
     readAndUpdateDateFromCommonDocRecord(tdoc: R): Promise<{}>;
     findCorrespondingCommonDocRecordsForMedia(baseDir: string, additionalMappings: {
         [key: string]: FileSystemDBSyncType;
@@ -54,4 +57,5 @@ export declare abstract class CommonDocMediaManagerModule<R extends CommonDocRec
     readExifForCommonDocImageRecord(tdocImage: BaseImageRecordType): Promise<{}>;
     readMetadataForCommonDocVideoRecord(tdocVideo: BaseVideoRecordType): Promise<{}>;
     scaleCommonDocImageRecord(tdocImage: BaseImageRecordType, width: number): Promise<{}>;
+    scaleCommonDocVideoRecord(tdocVideo: BaseVideoRecordType, width: number, addResolutionType: string): Promise<{}>;
 }

@@ -6,6 +6,8 @@ var readdirp = require("readdirp");
 var ffmpeg = require("fluent-ffmpeg");
 var Promise_serial = require("promise-serial");
 var fs = require("fs");
+exports.RESOLUTION_SCREENSHOW = 'screenshow';
+exports.RESOLUTION_THUMBNAIL = 'preview';
 var CommonDocMediaManagerModule = /** @class */ (function () {
     function CommonDocMediaManagerModule(backendConfig, dataService, mediaManager, commonDocExportManager) {
         this.backendConfig = backendConfig;
@@ -74,6 +76,20 @@ var CommonDocMediaManagerModule = /** @class */ (function () {
         var callback = function (tdoc) {
             return [me.scaleCommonDocRecordMediaWidth(tdoc, 100),
                 me.scaleCommonDocRecordMediaWidth(tdoc, 300),
+                me.scaleCommonDocRecordMediaWidth(tdoc, 600)];
+        };
+        return this.dataService.batchProcessSearchResult(searchForm, callback, {
+            loadDetailsMode: undefined,
+            loadTrack: false,
+            showFacets: false,
+            showForm: false
+        }, processingOptions);
+    };
+    CommonDocMediaManagerModule.prototype.scaleVideosToDefaultWidth = function (searchForm, processingOptions) {
+        var me = this;
+        var callback = function (tdoc) {
+            return [me.scaleCommonDocRecordMediaWidth(tdoc, 200, exports.RESOLUTION_SCREENSHOW),
+                me.scaleCommonDocRecordMediaWidth(tdoc, 200, exports.RESOLUTION_THUMBNAIL),
                 me.scaleCommonDocRecordMediaWidth(tdoc, 600)];
         };
         return this.dataService.batchProcessSearchResult(searchForm, callback, {
@@ -200,6 +216,22 @@ var CommonDocMediaManagerModule = /** @class */ (function () {
         return this.mediaManager.scaleImage(this.backendConfig.apiRoutePicturesStaticDir + '/'
             + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'full/' + tdocImage.fileName, this.backendConfig.apiRoutePicturesStaticDir + '/'
             + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'x' + width + '/' + tdocImage.fileName, width);
+    };
+    CommonDocMediaManagerModule.prototype.scaleCommonDocVideoRecord = function (tdocVideo, width, addResolutionType) {
+        switch (addResolutionType) {
+            case exports.RESOLUTION_SCREENSHOW:
+                return this.mediaManager.generateVideoScreenshot(this.backendConfig.apiRouteVideosStaticDir + '/'
+                    + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'full/' + tdocVideo.fileName, this.backendConfig.apiRouteVideosStaticDir + '/'
+                    + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'screenshot' + '/' + tdocVideo.fileName, width, true);
+            case exports.RESOLUTION_THUMBNAIL:
+                return this.mediaManager.generateVideoPreview(this.backendConfig.apiRouteVideosStaticDir + '/'
+                    + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'full/' + tdocVideo.fileName, this.backendConfig.apiRouteVideosStaticDir + '/'
+                    + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'thumbnail' + '/' + tdocVideo.fileName, width, true);
+            default:
+                return this.mediaManager.scaleVideoMP4(this.backendConfig.apiRouteVideosStaticDir + '/'
+                    + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'full/' + tdocVideo.fileName, this.backendConfig.apiRouteVideosStaticDir + '/'
+                    + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'x' + width + '/' + tdocVideo.fileName, width, true);
+        }
     };
     return CommonDocMediaManagerModule;
 }());

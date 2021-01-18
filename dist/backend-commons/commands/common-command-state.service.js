@@ -10,9 +10,8 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var admin_response_1 = require("@dps/mycms-commons/dist/commons/model/admin-response");
 var CommonCommandStateService = /** @class */ (function () {
-    function CommonCommandStateService(availableCommands) {
+    function CommonCommandStateService() {
         this.commandRunStates = {};
-        this.availableCommands = availableCommands;
     }
     CommonCommandStateService.prototype.getAllRunInformation = function () {
         var res = {};
@@ -24,16 +23,10 @@ var CommonCommandStateService = /** @class */ (function () {
     };
     ;
     CommonCommandStateService.prototype.getRunInformation = function (command) {
-        if (!this.availableCommands.includes(command)) {
-            Promise.reject('unknown command');
-        }
         return Promise.resolve(__assign({}, this.commandRunStates[command]));
     };
     ;
     CommonCommandStateService.prototype.isRunning = function (command) {
-        if (!this.availableCommands.includes(command)) {
-            Promise.reject('unknown command');
-        }
         if (this.commandRunStates[command] && this.commandRunStates[command].state === admin_response_1.CommonAdminCommandState.RUNNING) {
             return Promise.resolve(true);
         }
@@ -67,9 +60,6 @@ var CommonCommandStateService = /** @class */ (function () {
     };
     ;
     CommonCommandStateService.prototype.setCommandRunInformation = function (action, state) {
-        if (!this.availableCommands.includes(action)) {
-            Promise.reject('unknown action');
-        }
         this.commandRunStates[action] = __assign({}, state);
         return Promise.resolve(state);
     };

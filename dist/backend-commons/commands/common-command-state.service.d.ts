@@ -1,10 +1,8 @@
 import { CommonAdminCommandResultState, CommonAdminCommandStateType } from '@dps/mycms-commons/dist/commons/model/admin-response';
 export declare class CommonCommandStateService {
-    protected availableCommands: string[];
     protected commandRunStates: {
         [key: string]: CommonAdminCommandStateType;
     };
-    constructor(availableCommands: string[]);
     getAllRunInformation(): Promise<{
         [key: string]: CommonAdminCommandStateType;
     }>;

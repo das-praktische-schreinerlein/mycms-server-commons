@@ -7,7 +7,9 @@
 
 ### new features
 - backend: added admin-command/server/cli-module with parameter-validation and configurable command-restrictions
-- backend: added abstract commands to use for db/webcall-commands and dbmigrate 
+- backend: added abstract commands to use for db/webcall-commands and dbmigrate
+- backend: CommonDocMediaManagerModule added functions to scaleVideo-defaults 
+- backend: MediaManagerModule improved handling and added functions to render scale single files
 
 ### improvements
 - backend: added bindIp+tcpBacklog for backend-config

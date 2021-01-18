@@ -5,12 +5,7 @@ import {
 } from '@dps/mycms-commons/dist/commons/model/admin-response';
 
 export class CommonCommandStateService {
-    protected availableCommands: string[];
     protected commandRunStates: {[key: string]: CommonAdminCommandStateType} = {};
-
-    constructor(availableCommands: string[]) {
-        this.availableCommands = availableCommands;
-    }
 
     public getAllRunInformation(): Promise<{[key: string]: CommonAdminCommandStateType}> {
         const res: {[key: string]: CommonAdminCommandStateType} = {};
@@ -22,18 +17,10 @@ export class CommonCommandStateService {
     };
 
     public getRunInformation(command: string): Promise<CommonAdminCommandStateType> {
-        if (!this.availableCommands.includes(command)) {
-            Promise.reject('unknown command');
-        }
-
         return Promise.resolve({...this.commandRunStates[command]});
     };
 
     public isRunning(command: string): Promise<boolean> {
-        if (!this.availableCommands.includes(command)) {
-            Promise.reject('unknown command');
-        }
-
         if (this.commandRunStates[command] && this.commandRunStates[command].state === CommonAdminCommandState.RUNNING) {
             return Promise.resolve(true);
         }
@@ -76,10 +63,6 @@ export class CommonCommandStateService {
     };
 
     protected setCommandRunInformation(action: string, state: CommonAdminCommandStateType): Promise<CommonAdminCommandStateType> {
-        if (!this.availableCommands.includes(action)) {
-            Promise.reject('unknown action');
-        }
-
         this.commandRunStates[action] = {...state};
 
         return Promise.resolve(state);

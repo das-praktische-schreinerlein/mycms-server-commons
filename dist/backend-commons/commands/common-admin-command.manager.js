@@ -15,7 +15,7 @@ var CommonAdminCommandManager = /** @class */ (function () {
     function CommonAdminCommandManager(commands, adminCommandConfig) {
         this.commands = commands;
         this.adminCommandConfig = adminCommandConfig;
-        this.commandStateService = new common_command_state_service_1.CommonCommandStateService(Object.keys(this.adminCommandConfig.preparedCommands));
+        this.commandStateService = new common_command_state_service_1.CommonCommandStateService();
     }
     CommonAdminCommandManager.prototype.listPreparedCommands = function () {
         var res = {};

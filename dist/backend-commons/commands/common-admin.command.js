@@ -43,7 +43,7 @@ var CommonAdminCommand = /** @class */ (function () {
         this.actionRunStates = {};
         this.parameterValidations = __assign({ command: new generic_validator_util_1.KeywordValidationRule(true), action: new generic_validator_util_1.KeywordValidationRule(true) }, this.createValidationRules());
         this.availableActions = this.definePossibleActions();
-        this.commandStateService = new common_command_state_service_1.CommonCommandStateService(this.availableActions);
+        this.commandStateService = new common_command_state_service_1.CommonCommandStateService();
     }
     CommonAdminCommand.prototype.process = function (argv) {
         var me = this;

@@ -1,5 +1,12 @@
-import {CommonAdminCommand, SimpleConfigFilePathValidationRule, SimpleFilePathValidationRule} from './common-admin.command';
-import {NameValidationRule, ValidationRule} from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
+import {
+    CommonAdminCommand,
+    SimpleConfigFilePathValidationRule,
+    SimpleFilePathValidationRule
+} from './common-admin.command';
+import {
+    NameValidationRule,
+    ValidationRule
+} from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
 
 const DBMigrate = require('db-migrate');
 
@@ -35,13 +42,31 @@ export class DbMigrateCommand extends CommonAdminCommand {
         const options = {
             config: migrationDbConfigFile,
             cmdOptions: {
-                'migrations-dir': migrationsDir
+                'migrations-dir': migrationsDir,
             },
             env: migrationEnv,
             throwUncatched: true
         };
+
+        const origArgv = {...process.argv};
+        process.argv = this.generateProcessArgs(options);
         const dbMigrate = DBMigrate.getInstance(true, options);
 
-        return dbMigrate.up();
+        return dbMigrate.up().then((result) => {
+            process.argv = origArgv;
+            return Promise.resolve(result);
+        }).catch(reason => {
+            process.argv = origArgv;
+            return Promise.reject(reason);
+        });
+    }
+
+    protected generateProcessArgs(options) {
+        return ['node', 'db-migrate',
+            '--migrations-dir', options.cmdOptions['migrations-dir'],
+            '--config', options.config,
+            '--env', options.env,
+            'up'
+        ];
     }
 }

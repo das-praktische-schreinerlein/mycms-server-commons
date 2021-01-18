@@ -9,6 +9,14 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var common_admin_command_1 = require("./common-admin.command");
 var generic_validator_util_1 = require("@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util");
@@ -44,13 +52,29 @@ var DbMigrateCommand = /** @class */ (function (_super) {
         var options = {
             config: migrationDbConfigFile,
             cmdOptions: {
-                'migrations-dir': migrationsDir
+                'migrations-dir': migrationsDir,
             },
             env: migrationEnv,
             throwUncatched: true
         };
+        var origArgv = __assign({}, process.argv);
+        process.argv = this.generateProcessArgs(options);
         var dbMigrate = DBMigrate.getInstance(true, options);
-        return dbMigrate.up();
+        return dbMigrate.up().then(function (result) {
+            process.argv = origArgv;
+            return Promise.resolve(result);
+        }).catch(function (reason) {
+            process.argv = origArgv;
+            return Promise.reject(reason);
+        });
+    };
+    DbMigrateCommand.prototype.generateProcessArgs = function (options) {
+        return ['node', 'db-migrate',
+            '--migrations-dir', options.cmdOptions['migrations-dir'],
+            '--config', options.config,
+            '--env', options.env,
+            'up'
+        ];
     };
     return DbMigrateCommand;
 }(common_admin_command_1.CommonAdminCommand));

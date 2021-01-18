@@ -40,7 +40,7 @@ export abstract class CommonAdminCommand implements AbstractCommand {
             ...this.createValidationRules()
         };
         this.availableActions = this.definePossibleActions();
-        this.commandStateService = new CommonCommandStateService(this.availableActions)
+        this.commandStateService = new CommonCommandStateService()
     }
 
     public process(argv): Promise<CommonAdminCommandStateType> {

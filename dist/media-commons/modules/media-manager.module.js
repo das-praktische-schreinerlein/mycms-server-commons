@@ -3,9 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var exif = require("fast-exif");
 var Jimp = require("jimp");
 var gm = require("gm");
-var mkdirp = require("mkdirp");
 var fs = require("fs");
-var fsExtra = require("fs-extra");
+var file_utils_1 = require("@dps/mycms-commons/dist/commons/utils/file.utils");
 var readdirp = require("readdirp");
 var ffmpeg = require("fluent-ffmpeg");
 var Promise_serial = require("promise-serial");
@@ -34,7 +33,7 @@ var MediaManagerModule = /** @class */ (function () {
             })
                 .on('end', function (err, stdout, stderr) {
                 var srcFileTimeMp4 = fs.statSync(srcPath).mtime;
-                fsExtra.copy(destPath, srcPath)
+                file_utils_1.FileUtils.copyFile(destPath, srcPath, false)
                     .then(function () {
                     console.log('Finished processing:', srcPath, destPath, err);
                     fs.utimesSync(destPath, srcFileTimeMp4, srcFileTimeMp4);
@@ -55,6 +54,13 @@ var MediaManagerModule = /** @class */ (function () {
                 .run();
         });
     };
+    MediaManagerModule.prototype.convertVideoToMP4 = function (srcFile, destFile, flgIgnoreIfExists) {
+        return this.doFFMegActionOnVideo(srcFile, destFile, flgIgnoreIfExists, function (processorResolve, processorReject, command) {
+            return Promise.resolve(command.outputFormat('mp4')
+                .outputOption('-map_metadata 0')
+                .outputOption('-pix_fmt yuv420p'));
+        });
+    };
     MediaManagerModule.prototype.convertVideosFromMediaDirToMP4 = function (baseDir, destDir, flgIgnoreIfExists) {
         var mediaTypes = {
             'MOV': 'VIDEO',
@@ -62,10 +68,22 @@ var MediaManagerModule = /** @class */ (function () {
             'AVI': 'VIDEO',
             'avi': 'VIDEO'
         };
-        return this.doFfmegActionOnVideosFromMediaDir(baseDir, destDir, '.MP4', mediaTypes, flgIgnoreIfExists, function (command) {
-            return command.outputFormat('mp4')
-                .outputOption('-map_metadata 0')
-                .outputOption('-pix_fmt yuv420p');
+        var me = this;
+        return this.doActionOnFilesFromMediaDir(baseDir, destDir, '.MP4', mediaTypes, function (srcPath, destPath, processorResolve, processorReject) {
+            return me.convertVideoToMP4(srcPath, destPath, flgIgnoreIfExists).then(function (result) {
+                return processorResolve(result);
+            }).catch(function (reason) {
+                return processorReject(reason);
+            });
+        });
+    };
+    MediaManagerModule.prototype.scaleVideoMP4 = function (srcFile, destFile, width, flgIgnoreIfExists) {
+        return this.doFFMegActionOnVideo(srcFile, destFile, flgIgnoreIfExists, function (processorResolve, processorReject, command) {
+            return Promise.resolve(command.outputFormat('mp4')
+                .size(width + 'x?')
+                .autopad(true, 'black')
+                .keepDisplayAspectRatio()
+                .outputOptions('-pix_fmt yuv420p'));
         });
     };
     MediaManagerModule.prototype.scaleVideosFromMediaDirToMP4 = function (baseDir, destDir, width, flgIgnoreIfExists) {
@@ -73,41 +91,39 @@ var MediaManagerModule = /** @class */ (function () {
             'MP4': 'VIDEO',
             'mp4': 'VIDEO'
         };
-        return this.doFfmegActionOnVideosFromMediaDir(baseDir, destDir, '', mediaTypes, flgIgnoreIfExists, function (command) {
-            return command.outputFormat('mp4')
-                .size(width + 'x?')
-                .autopad(true, 'black')
-                .keepDisplayAspectRatio()
-                .outputOptions('-pix_fmt yuv420p');
+        var me = this;
+        return this.doActionOnFilesFromMediaDir(baseDir, destDir, '', mediaTypes, function (srcPath, destPath, processorResolve, processorReject) {
+            return me.scaleVideoMP4(srcPath, destPath, width, flgIgnoreIfExists).then(function (result) {
+                return processorResolve(result);
+            }).catch(function (reason) {
+                return processorReject(reason);
+            });
         });
     };
-    MediaManagerModule.prototype.generateVideoScreenshotFromMediaDir = function (baseDir, destDir, width, flgIgnoreIfExists) {
-        var mediaTypes = {
-            'MP4': 'VIDEO',
-            'mp4': 'VIDEO'
-        };
-        return this.doActionOnFilesFromMediaDir(baseDir, destDir, '.jpg', mediaTypes, function (srcPath, destPath, processorResolve, processorReject) {
-            if (flgIgnoreIfExists && fs.existsSync(destPath)) {
-                console.log('SKIP - already exists', destPath);
-                return processorResolve(destPath);
+    MediaManagerModule.prototype.generateVideoScreenshot = function (srcFile, destFile, width, flgIgnoreIfExists) {
+        return new Promise(function (processorResolve, processorReject) {
+            destFile = destFile + '.jpg';
+            if (flgIgnoreIfExists && fs.existsSync(destFile)) {
+                console.log('SKIP - generateVideoScreenshot - already exists', destFile);
+                return processorResolve(destFile);
             }
-            var patterns = destPath.split(/[\/\\]/);
+            var fileError = file_utils_1.FileUtils.checkFilePath(destFile, true, false, false);
+            if (fileError) {
+                return processorReject(fileError);
+            }
+            var patterns = destFile.split(/[\/\\]/);
             var fileName = patterns.splice(-1)[0];
             var fileDir = patterns.join('/');
-            return ffmpeg(srcPath)
+            ffmpeg(srcFile)
                 .on('error', function (err) {
-                console.error('An error occurred:', srcPath, destPath, err);
-                processorReject(err);
-            })
-                .on('progress', function (progress) {
-                //                        console.log('Processing ' + srcPath + ': ' + progress.percent + '% done @ '
-                //                            + progress.currentFps + ' fps');
+                console.error('ERROR - An error occurred on generateVideoScreenshot:', srcFile, destFile, err);
+                return processorReject(err);
             })
                 .on('end', function (err, stdout, stderr) {
-                console.log('Finished processing:', srcPath, destPath, err);
-                var srcFileTime = fs.statSync(srcPath).mtime;
-                fs.utimesSync(destPath, srcFileTime, srcFileTime);
-                processorResolve(destPath);
+                console.log('FINISHED - generateVideoScreenshot:', srcFile, destFile, err);
+                var srcFileTime = fs.statSync(srcFile).mtime;
+                fs.utimesSync(destFile, srcFileTime, srcFileTime);
+                return processorResolve(destFile);
             })
                 .screenshots({
                 count: 1,
@@ -117,32 +133,43 @@ var MediaManagerModule = /** @class */ (function () {
             });
         });
     };
-    MediaManagerModule.prototype.generateVideoPreviewFromMediaDir = function (baseDir, destDir, width, flgIgnoreIfExists) {
+    MediaManagerModule.prototype.generateVideoScreenshotFromMediaDir = function (baseDir, destDir, width, flgIgnoreIfExists) {
         var mediaTypes = {
             'MP4': 'VIDEO',
             'mp4': 'VIDEO'
         };
         var me = this;
-        return this.doActionOnFilesFromMediaDir(baseDir, destDir, '.gif', mediaTypes, function (srcPath, destPath, processorResolve, processorReject) {
-            if (flgIgnoreIfExists && fs.existsSync(destPath) && fs.existsSync(destPath + '.mp4')) {
-                console.log('SKIP - already exists', destPath);
-                return processorResolve(destPath);
+        return this.doActionOnFilesFromMediaDir(baseDir, destDir, '', mediaTypes, function (srcPath, destPath, processorResolve, processorReject) {
+            return me.generateVideoScreenshot(srcPath, destPath, width, flgIgnoreIfExists).then(function (result) {
+                return processorResolve(result);
+            }).catch(function (reason) {
+                return processorReject(reason);
+            });
+        });
+    };
+    MediaManagerModule.prototype.generateVideoPreview = function (srcFile, destFile, width, flgIgnoreIfExists) {
+        var me = this;
+        return new Promise(function (processorResolve, processorReject) {
+            destFile = destFile + '.gif';
+            if (flgIgnoreIfExists && fs.existsSync(destFile) && fs.existsSync(destFile + '.mp4')) {
+                console.log('SKIP - generateVideoPreview - already exists', destFile);
+                return Promise.resolve(destFile);
             }
-            var patterns = destPath.split(/[\/\\]/);
+            var fileError = file_utils_1.FileUtils.checkFilePath(destFile, true, false, false);
+            if (fileError) {
+                return processorReject(fileError);
+            }
+            var patterns = destFile.split(/[\/\\]/);
             patterns.splice(-1)[0];
             var files = [];
             var tmpFileNameBase = 'tmpfile-' + (new Date().getTime()) + '-';
-            ffmpeg(srcPath)
+            ffmpeg(srcFile)
                 .on('filenames', function (filenames) {
                 files = filenames;
             })
                 .on('error', function (err) {
-                console.error('An error occurred:', srcPath, destPath, err);
+                console.error('ERROR - generateVideoPreview - An error occurred:', srcFile, destFile, err);
                 processorReject(err);
-            })
-                .on('progress', function (progress) {
-                //                        console.log('Processing ' + srcPath + ': ' + progress.percent + '% done @ '
-                //                            + progress.currentFps + ' fps');
             })
                 .on('end', function (err, stdout, stderr) {
                 var gmCommand = me.gm();
@@ -150,33 +177,29 @@ var MediaManagerModule = /** @class */ (function () {
                     var file = files_1[_i];
                     gmCommand = gmCommand.in(me.tmpDir + '/' + file).quality(80).delay(1000);
                 }
-                gmCommand.write(destPath, function (err2) {
+                gmCommand.write(destFile, function (err2) {
                     if (err2) {
-                        console.error('An error occurred:', srcPath, destPath, err2);
+                        console.error('ERROR - generateVideoPreview gmCommand - An error occurred:', srcFile, destFile, err2);
                         return processorReject(err);
                     }
-                    var srcFileTime = fs.statSync(srcPath).mtime;
-                    fs.utimesSync(destPath, srcFileTime, srcFileTime);
-                    destPath = destPath + '.mp4';
-                    var command = ffmpeg()
+                    var srcFileTime = fs.statSync(srcFile).mtime;
+                    fs.utimesSync(destFile, srcFileTime, srcFileTime);
+                    destFile = destFile + '.mp4';
+                    var command2 = ffmpeg()
                         .on('error', function (err3) {
-                        console.error('An error occurred:', srcPath, destPath, err3);
+                        console.error('ERROR - generateVideoPreview - command2 An error occurred:', srcFile, destFile, err3);
                         processorReject(err);
                     })
-                        .on('progress', function (progress2) {
-                        //                                    console.log('Processing ' + srcPath + ': ' + progress2.percent + '% done @ '
-                        //                                        + progress2.currentFps + ' fps');
-                    })
                         .on('end', function (err3, stdout2, stderr2) {
-                        console.log('Finished processing:', srcPath, destPath, err3);
-                        var srcFileTimeMp4 = fs.statSync(srcPath).mtime;
-                        fs.utimesSync(destPath, srcFileTimeMp4, srcFileTimeMp4);
-                        processorResolve(destPath);
+                        console.log('FINISHED - generateVideoPreview processing:', srcFile, destFile, err3);
+                        var srcFileTimeMp4 = fs.statSync(srcFile).mtime;
+                        fs.utimesSync(destFile, srcFileTimeMp4, srcFileTimeMp4);
+                        processorResolve(destFile);
                     });
-                    command
+                    command2
                         .input(me.tmpDir + '/' + tmpFileNameBase + '%1d.png')
                         .inputFPS(3)
-                        .output(destPath)
+                        .output(destFile)
                         .size(width + 'x?')
                         .outputOptions('-pix_fmt yuv420p')
                         .run();
@@ -187,6 +210,20 @@ var MediaManagerModule = /** @class */ (function () {
                 filename: tmpFileNameBase + '%i.png',
                 folder: me.tmpDir,
                 size: width + 'x?'
+            });
+        });
+    };
+    MediaManagerModule.prototype.generateVideoPreviewFromMediaDir = function (baseDir, destDir, width, flgIgnoreIfExists) {
+        var mediaTypes = {
+            'MP4': 'VIDEO',
+            'mp4': 'VIDEO'
+        };
+        var me = this;
+        return this.doActionOnFilesFromMediaDir(baseDir, destDir, '', mediaTypes, function (srcPath, destPath, processorResolve, processorReject) {
+            return me.generateVideoPreview(srcPath, destPath, width, flgIgnoreIfExists).then(function (result) {
+                return processorResolve(result);
+            }).catch(function (reason) {
+                return processorReject(reason);
             });
         });
     };
@@ -206,16 +243,22 @@ var MediaManagerModule = /** @class */ (function () {
     };
     MediaManagerModule.prototype.scaleImage = function (imagePath, resultPath, width) {
         if (fs.existsSync(resultPath)) {
-            return js_data_1.utils.resolve(imagePath);
+            return Promise.resolve(imagePath);
         }
-        var resultDir = resultPath.replace(/[\\\/]+(?=[^\/\\]*$).*$/, '');
-        mkdirp.sync(resultDir);
+        var fileError = file_utils_1.FileUtils.checkFilePath(resultPath, true, false, false);
+        if (fileError) {
+            return Promise.reject(fileError);
+        }
         return this.scaleImageGm(imagePath, resultPath, width);
     };
     MediaManagerModule.prototype.scaleImageJimp = function (imagePath, resultPath, width, flgIgnoreIfExists) {
         if (flgIgnoreIfExists && fs.existsSync(resultPath)) {
             console.log('SKIP - already exists', resultPath);
-            return js_data_1.utils.resolve(resultPath);
+            return Promise.resolve(resultPath);
+        }
+        var fileError = file_utils_1.FileUtils.checkFilePath(resultPath, true, false, false);
+        if (fileError) {
+            return Promise.reject(fileError);
         }
         return Jimp.read(imagePath).then(function (image) {
             image.resize(width, Jimp.AUTO)
@@ -241,6 +284,10 @@ var MediaManagerModule = /** @class */ (function () {
                 console.log('SKIP - already exists', resultPath);
                 return resolve(resultPath);
             }
+            var fileError = file_utils_1.FileUtils.checkFilePath(resultPath, true, false, false);
+            if (fileError) {
+                return reject(fileError);
+            }
             _this.gm(imagePath)
                 .autoOrient()
                 .gaussian(0.05)
@@ -258,11 +305,15 @@ var MediaManagerModule = /** @class */ (function () {
             });
         });
     };
-    MediaManagerModule.prototype.doFfmegActionOnVideosFromMediaDir = function (baseDir, destDir, destSuffix, mediaTypes, flgIgnoreIfExists, ffmegCommandExtender) {
-        return this.doActionOnFilesFromMediaDir(baseDir, destDir, destSuffix, mediaTypes, function (srcPath, destPath, processorResolve, processorReject) {
+    MediaManagerModule.prototype.doFFMegActionOnVideo = function (srcPath, destPath, flgIgnoreIfExists, ffmegCommandExtender) {
+        return new Promise(function (processorResolve, processorReject) {
             if (flgIgnoreIfExists && fs.existsSync(destPath)) {
                 console.log('SKIP - already exists', srcPath, destPath);
                 return processorResolve(destPath);
+            }
+            var fileError = file_utils_1.FileUtils.checkFilePath(destPath, true, false, false);
+            if (fileError) {
+                return processorReject(fileError);
             }
             var command = ffmpeg(srcPath)
                 .on('error', function (err) {
@@ -280,8 +331,14 @@ var MediaManagerModule = /** @class */ (function () {
                 return processorResolve(destPath);
             })
                 .output(destPath);
-            command = ffmegCommandExtender(command);
-            command.run();
+            ffmegCommandExtender(processorResolve, processorReject, command).then(function (fullCommand) {
+                if (fullCommand === undefined) {
+                    return processorResolve(destPath);
+                }
+                fullCommand.run();
+            }).catch(function (reason) {
+                return processorReject(reason);
+            });
         });
     };
     MediaManagerModule.prototype.doActionOnFilesFromMediaDir = function (baseDir, destDir, destSuffix, mediaTypes, commandExtender) {
@@ -324,10 +381,10 @@ var MediaManagerModule = /** @class */ (function () {
                 var _loop_1 = function (destPath) {
                     funcs.push(function () {
                         return new Promise(function (processorResolve, processorReject) {
-                            var patterns = destPath.split(/[\/\\]/);
-                            patterns.splice(-1)[0];
-                            var fileDir = patterns.join('/');
-                            mkdirp.sync(fileDir);
+                            var fileError = file_utils_1.FileUtils.checkFilePath(destPath, true, false, false);
+                            if (fileError) {
+                                return processorReject(fileError);
+                            }
                             return commandExtender(media[destPath], destPath, processorResolve, processorReject);
                         });
                     });

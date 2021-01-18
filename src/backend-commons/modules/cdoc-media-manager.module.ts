@@ -15,9 +15,7 @@ import {
     CommonVideoBackendConfigType
 } from './backend.commons';
 import {CacheConfig} from '../../server-commons/datacache.module';
-import {
-    ProcessingOptions
-} from '@dps/mycms-commons/dist/search-commons/services/cdoc-search.service';
+import {ProcessingOptions} from '@dps/mycms-commons/dist/search-commons/services/cdoc-search.service';
 import {CommonDocDataService} from '@dps/mycms-commons/dist/search-commons/services/cdoc-data.service';
 import * as fs from 'fs';
 import {
@@ -50,6 +48,9 @@ export interface FileSystemDBSyncType {
     file: FileInfoType;
     records: DBFileInfoType[];
 }
+
+export const RESOLUTION_SCREENSHOW = 'screenshow';
+export const RESOLUTION_THUMBNAIL = 'preview';
 
 export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F extends CommonDocSearchForm,
     S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>,
@@ -99,7 +100,7 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
 
     public abstract updateDateOfCommonDocRecord(tdoc: R, date: Date): Promise<{}>;
 
-    public abstract scaleCommonDocRecordMediaWidth(tdoc: R, width: number): Promise<{}>;
+    public abstract scaleCommonDocRecordMediaWidth(tdoc: R, width: number, addResolutionType?: string): Promise<{}>;
 
     public abstract findCommonDocRecordsForFileInfo(baseDir: string, fileInfo: FileInfoType,
                                                     additionalMappings: {[key: string]: FileSystemDBSyncType}): Promise<DBFileInfoType[]>;
@@ -145,6 +146,22 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
         const callback = function(tdoc: R): Promise<{}>[] {
             return [me.scaleCommonDocRecordMediaWidth(tdoc, 100),
                 me.scaleCommonDocRecordMediaWidth(tdoc, 300),
+                me.scaleCommonDocRecordMediaWidth(tdoc, 600)];
+        };
+
+        return this.dataService.batchProcessSearchResult(searchForm, callback, {
+            loadDetailsMode: undefined,
+            loadTrack: false,
+            showFacets: false,
+            showForm: false
+        }, processingOptions);
+    }
+
+    public scaleVideosToDefaultWidth(searchForm: F, processingOptions: ProcessingOptions): Promise<{}> {
+        const me = this;
+        const callback = function(tdoc: R): Promise<{}>[] {
+            return [me.scaleCommonDocRecordMediaWidth(tdoc, 200, RESOLUTION_SCREENSHOW),
+                me.scaleCommonDocRecordMediaWidth(tdoc, 200, RESOLUTION_THUMBNAIL),
                 me.scaleCommonDocRecordMediaWidth(tdoc, 600)];
         };
 
@@ -290,6 +307,29 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
             this.backendConfig.apiRoutePicturesStaticDir + '/'
             + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'x' + width + '/' +  tdocImage.fileName,
             width);
+    }
+
+    public scaleCommonDocVideoRecord(tdocVideo: BaseVideoRecordType, width: number, addResolutionType: string): Promise<{}> {
+        switch (addResolutionType) {
+            case RESOLUTION_SCREENSHOW:
+                return this.mediaManager.generateVideoScreenshot(this.backendConfig.apiRouteVideosStaticDir + '/'
+                    + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'full/' +  tdocVideo.fileName,
+                    this.backendConfig.apiRouteVideosStaticDir + '/'
+                    + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'screenshot' + '/' +  tdocVideo.fileName,
+                    width, true);
+            case RESOLUTION_THUMBNAIL:
+                return this.mediaManager.generateVideoPreview(this.backendConfig.apiRouteVideosStaticDir + '/'
+                    + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'full/' +  tdocVideo.fileName,
+                    this.backendConfig.apiRouteVideosStaticDir + '/'
+                    + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'thumbnail' + '/' +  tdocVideo.fileName,
+                    width, true);
+            default:
+                return this.mediaManager.scaleVideoMP4(this.backendConfig.apiRouteVideosStaticDir + '/'
+                    + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'full/' +  tdocVideo.fileName,
+                    this.backendConfig.apiRouteVideosStaticDir + '/'
+                    + (this.backendConfig.apiRouteStoredVideosResolutionPrefix || '') + 'x' + width + '/' +  tdocVideo.fileName,
+                    width, true);
+        }
     }
 
 }

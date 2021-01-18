@@ -36,7 +36,7 @@ export abstract class CommonAdminCommandManager<A extends CommonAdminCommandConf
     constructor(commands: {[key: string]: CommonAdminCommand}, adminCommandConfig: A) {
         this.commands = commands;
         this.adminCommandConfig = adminCommandConfig;
-        this.commandStateService = new CommonCommandStateService(Object.keys(this.adminCommandConfig.preparedCommands));
+        this.commandStateService = new CommonCommandStateService();
     }
 
     public listPreparedCommands(): {[key: string]: CommonAdminCommandsListResponseType} {
