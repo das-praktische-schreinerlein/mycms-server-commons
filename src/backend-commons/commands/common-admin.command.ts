@@ -14,16 +14,16 @@ import {CommonCommandStateService} from './common-command-state.service';
 export class SimpleConfigFilePathValidationRule extends RegExValidationReplaceRule {
     constructor(required: boolean) {
         super(required,
-            new XRegExp('^[-_.a-zA-Z\/\\\\]*$', 'gi'),
-            new XRegExp('[-_.a-zA-Z\/\\\\]*', 'gi'), '', 4096);
+            new XRegExp('^[-_.a-zA-Z0-9:\/\\\\]*$', 'gi'),
+            new XRegExp('[-_.a-zA-Z0-9:\/\\\\]*', 'gi'), '', 4096);
     }
 }
 
 export class SimpleFilePathValidationRule extends RegExValidationReplaceRule {
     constructor(required: boolean) {
         super(required,
-            new XRegExp('^[-_.a-zA-Z\/\\\\ \\p{LC}]*$', 'gi'),
-            new XRegExp('[-_.a-zA-Z\/\\\\ \\p{LC}]*', 'gi'), '', 4096);
+            new XRegExp('^[-_.a-zA-Z0-9:\/\\\\ \\p{LC}]*$', 'gi'),
+            new XRegExp('[-_.a-zA-Z0-9:\/\\\\ \\p{LC}]*', 'gi'), '', 4096);
     }
 }
 
