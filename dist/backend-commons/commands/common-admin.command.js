@@ -25,7 +25,7 @@ var common_command_state_service_1 = require("./common-command-state.service");
 var SimpleConfigFilePathValidationRule = /** @class */ (function (_super) {
     __extends(SimpleConfigFilePathValidationRule, _super);
     function SimpleConfigFilePathValidationRule(required) {
-        return _super.call(this, required, new XRegExp('^[-_.a-zA-Z\/\\\\]*$', 'gi'), new XRegExp('[-_.a-zA-Z\/\\\\]*', 'gi'), '', 4096) || this;
+        return _super.call(this, required, new XRegExp('^[-_.a-zA-Z0-9:\/\\\\]*$', 'gi'), new XRegExp('[-_.a-zA-Z0-9:\/\\\\]*', 'gi'), '', 4096) || this;
     }
     return SimpleConfigFilePathValidationRule;
 }(generic_validator_util_1.RegExValidationReplaceRule));
@@ -33,7 +33,7 @@ exports.SimpleConfigFilePathValidationRule = SimpleConfigFilePathValidationRule;
 var SimpleFilePathValidationRule = /** @class */ (function (_super) {
     __extends(SimpleFilePathValidationRule, _super);
     function SimpleFilePathValidationRule(required) {
-        return _super.call(this, required, new XRegExp('^[-_.a-zA-Z\/\\\\ \\p{LC}]*$', 'gi'), new XRegExp('[-_.a-zA-Z\/\\\\ \\p{LC}]*', 'gi'), '', 4096) || this;
+        return _super.call(this, required, new XRegExp('^[-_.a-zA-Z0-9\:\/\\\\ \\p{LC}]*$', 'gi'), new XRegExp('[-_.a-zA-Z0-9\:\/\\\\ \\p{LC}]*', 'gi'), '', 4096) || this;
     }
     return SimpleFilePathValidationRule;
 }(generic_validator_util_1.RegExValidationReplaceRule));

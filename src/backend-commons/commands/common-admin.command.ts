@@ -22,8 +22,8 @@ export class SimpleConfigFilePathValidationRule extends RegExValidationReplaceRu
 export class SimpleFilePathValidationRule extends RegExValidationReplaceRule {
     constructor(required: boolean) {
         super(required,
-            new XRegExp('^[-_.a-zA-Z0-9:\/\\\\ \\p{LC}]*$', 'gi'),
-            new XRegExp('[-_.a-zA-Z0-9:\/\\\\ \\p{LC}]*', 'gi'), '', 4096);
+            new XRegExp('^[-_.a-zA-Z0-9\:\/\\\\ \\p{LC}]*$', 'gi'),
+            new XRegExp('[-_.a-zA-Z0-9\:\/\\\\ \\p{LC}]*', 'gi'), '', 4096);
     }
 }
 
