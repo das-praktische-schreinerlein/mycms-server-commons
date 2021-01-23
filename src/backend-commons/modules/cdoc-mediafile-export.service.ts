@@ -108,7 +108,7 @@ export abstract class CommonDocMediaFileExportManager<R extends CommonDocRecord>
                 break;
         }
 
-        return FileUtils.copyFile(srcPath, destPath, true).then(() => {
+        return FileUtils.copyFile(srcPath, destPath, true, false).then(() => {
             const result: ExportProcessingResult<R> = {
                 exportFileEntry: exportDir + '/' + exportFile,
                 record: mdoc,

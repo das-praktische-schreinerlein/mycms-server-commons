@@ -36,7 +36,7 @@ export class MediaManagerModule {
                 })
                 .on('end', function (err, stdout, stderr) {
                     const srcFileTimeMp4 = fs.statSync(srcPath).mtime;
-                    FileUtils.copyFile(destPath, srcPath, false)
+                    FileUtils.copyFile(destPath, srcPath, false, false)
                         .then(() => {
                             console.log('Finished processing:', srcPath, destPath, err);
                             fs.utimesSync(destPath, srcFileTimeMp4, srcFileTimeMp4);

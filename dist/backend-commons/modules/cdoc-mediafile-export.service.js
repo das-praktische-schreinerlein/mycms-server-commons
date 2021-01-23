@@ -77,7 +77,7 @@ var CommonDocMediaFileExportManager = /** @class */ (function () {
                 mappings.videoFile = exportDir + '/' + exportFile;
                 break;
         }
-        return file_utils_1.FileUtils.copyFile(srcPath, destPath, true).then(function () {
+        return file_utils_1.FileUtils.copyFile(srcPath, destPath, true, false).then(function () {
             var result = {
                 exportFileEntry: exportDir + '/' + exportFile,
                 record: mdoc,

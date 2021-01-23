@@ -33,7 +33,7 @@ var MediaManagerModule = /** @class */ (function () {
             })
                 .on('end', function (err, stdout, stderr) {
                 var srcFileTimeMp4 = fs.statSync(srcPath).mtime;
-                file_utils_1.FileUtils.copyFile(destPath, srcPath, false)
+                file_utils_1.FileUtils.copyFile(destPath, srcPath, false, false)
                     .then(function () {
                     console.log('Finished processing:', srcPath, destPath, err);
                     fs.utimesSync(destPath, srcFileTimeMp4, srcFileTimeMp4);
