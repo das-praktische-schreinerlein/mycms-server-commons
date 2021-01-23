@@ -48,6 +48,7 @@ export declare abstract class CommonDocMusicFileImportManager<R extends BaseMusi
     protected readonly baseDir: string;
     protected constructor(baseDir: string, mediaManager: MediaManagerModule);
     generateMusicDocRecordsFromMediaDir(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, baseDir: string, mappings: {}): Promise<R[]>;
+    private generateMusicDocsForImportContainer;
     checkMusicFile(path: string, records: R[], container: MediaImportContainerType, fileStats: fs.Stats): Promise<MediaImportFileCheckType>;
     checkMusicMediaData(path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, metadata: IAudioMetadata): Promise<MediaImportFileCheckType>;
     createRecordsForMusicMediaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, metadata: IAudioMetadata): Promise<{}>;

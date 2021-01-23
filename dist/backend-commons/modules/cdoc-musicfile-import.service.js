@@ -62,70 +62,9 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
                 }
                 container.FILES[path] = fileRes;
             }, function allCallBack(errors) {
-                var funcs = [];
-                var _loop_1 = function (path) {
-                    if (!container.FILES.hasOwnProperty(path)) {
-                        return "continue";
-                    }
-                    console.warn('check path', path);
-                    var extension = pathLib.extname(path).replace('.', '');
-                    if (mediaTypes[extension] === 'AUDIO') {
-                        funcs.push(function () {
-                            return new Promise(function (processorResolve) {
-                                return me.checkMusicFile(path, records, container, container.FILES[path]['stat'])
-                                    .then(function (checkFileResult) {
-                                    if (!checkFileResult.readyToImport) {
-                                        console.warn('SKIPPING file: ' + path, checkFileResult);
-                                        processorResolve(path);
-                                        return Promise.resolve();
-                                    }
-                                    return me.mediaManager.readMusicTagsForMusicFile(baseDir + '/' + path)
-                                        .then(function (metaData) {
-                                        var mediaDataContainer = {
-                                            genreName: undefined,
-                                            albumArtistName: undefined,
-                                            albumGenreName: undefined,
-                                            albumName: undefined,
-                                            artistName: undefined,
-                                            titleName: undefined,
-                                            trackNr: undefined,
-                                            releaseYear: undefined
-                                        };
-                                        me.mapAudioMetaDataToMusicMediaData(mappings, path, metaData, mediaDataContainer);
-                                        return me.checkMusicMediaData(path, records, container, mediaDataContainer, container.FILES[path]['stat'], metaData).then(function (checkMediaDataResult) {
-                                            if (!checkMediaDataResult.readyToImport) {
-                                                console.warn('SKIPPING file: ' + path, checkMediaDataResult);
-                                                processorResolve(path);
-                                                return Promise.resolve();
-                                            }
-                                            return me.createRecordsForMusicMediaData(mapper, responseMapper, path, records, container, mediaDataContainer, container.FILES[path]['stat'], metaData).then(function () {
-                                                processorResolve(path);
-                                                return Promise.resolve();
-                                            });
-                                        });
-                                    });
-                                }).catch(function (err) {
-                                    console.error('error while reading file: ' + path, err);
-                                    processorResolve(path);
-                                    return Promise.resolve();
-                                });
-                            });
-                        });
-                    }
-                    else if (mediaTypes[extension] === 'AUDIOCOVER') {
-                        me.checkAndUpdateAlbumCover(container.ALBUMCOVERFILES, path);
-                    }
-                    else {
-                        console.warn('SKIP file - unknown mediaTypes', mediaTypes[extension], extension, path);
-                    }
-                };
-                for (var path in container.FILES) {
-                    _loop_1(path);
-                }
-                Promise_serial(funcs, { parallelize: 1 }).then(function () {
+                me.generateMusicDocsForImportContainer(container, mediaTypes, baseDir, mappings, mapper, responseMapper).then(function (records) {
                     return allresolve(records);
-                }).catch(function errorSearch(reason) {
-                    console.error('generateMediaDocRecordsFromMediaDir failed:', reason);
+                }).catch(function (reason) {
                     return allreject(reason);
                 });
                 if (errors) {
@@ -134,6 +73,76 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
                     });
                 }
             });
+        });
+    };
+    CommonDocMusicFileImportManager.prototype.generateMusicDocsForImportContainer = function (container, mediaTypes, baseDir, mappings, mapper, responseMapper) {
+        var me = this;
+        var records = [];
+        var funcs = [];
+        var _loop_1 = function (path) {
+            if (!container.FILES.hasOwnProperty(path)) {
+                return "continue";
+            }
+            console.warn('check path', path);
+            var extension = pathLib.extname(path).replace('.', '');
+            if (mediaTypes[extension] === 'AUDIO') {
+                funcs.push(function () {
+                    return new Promise(function (processorResolve) {
+                        return me.checkMusicFile(path, records, container, container.FILES[path]['stat'])
+                            .then(function (checkFileResult) {
+                            if (!checkFileResult.readyToImport) {
+                                console.warn('SKIPPING file: ' + path, checkFileResult);
+                                processorResolve(path);
+                                return Promise.resolve();
+                            }
+                            return me.mediaManager.readMusicTagsForMusicFile(baseDir + '/' + path)
+                                .then(function (metaData) {
+                                var mediaDataContainer = {
+                                    genreName: undefined,
+                                    albumArtistName: undefined,
+                                    albumGenreName: undefined,
+                                    albumName: undefined,
+                                    artistName: undefined,
+                                    titleName: undefined,
+                                    trackNr: undefined,
+                                    releaseYear: undefined
+                                };
+                                me.mapAudioMetaDataToMusicMediaData(mappings, path, metaData, mediaDataContainer);
+                                return me.checkMusicMediaData(path, records, container, mediaDataContainer, container.FILES[path]['stat'], metaData).then(function (checkMediaDataResult) {
+                                    if (!checkMediaDataResult.readyToImport) {
+                                        console.warn('SKIPPING file: ' + path, checkMediaDataResult);
+                                        processorResolve(path);
+                                        return Promise.resolve();
+                                    }
+                                    return me.createRecordsForMusicMediaData(mapper, responseMapper, path, records, container, mediaDataContainer, container.FILES[path]['stat'], metaData).then(function () {
+                                        processorResolve(path);
+                                        return Promise.resolve();
+                                    });
+                                });
+                            });
+                        }).catch(function (err) {
+                            console.error('error while reading file: ' + path, err);
+                            processorResolve(path);
+                            return Promise.resolve();
+                        });
+                    });
+                });
+            }
+            else if (mediaTypes[extension] === 'AUDIOCOVER') {
+                me.checkAndUpdateAlbumCover(container.ALBUMCOVERFILES, path);
+            }
+            else {
+                console.warn('SKIP file - unknown mediaTypes', mediaTypes[extension], extension, path);
+            }
+        };
+        for (var path in container.FILES) {
+            _loop_1(path);
+        }
+        return Promise_serial(funcs, { parallelize: 1 }).then(function () {
+            return Promise.resolve(records);
+        }).catch(function errorSearch(reason) {
+            console.error('generateMediaDocRecordsFromMediaDir failed:', reason);
+            return Promise.reject(reason);
         });
     };
     CommonDocMusicFileImportManager.prototype.checkMusicFile = function (path, records, container, fileStats) {

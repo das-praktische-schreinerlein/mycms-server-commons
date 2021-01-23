@@ -13,6 +13,7 @@
 
 ### improvements
 - backend: added bindIp+tcpBacklog for backend-config
+- backend: improved mediafile-importer to optionally check if file already exists in database
 
 ### bug fixes
 - none

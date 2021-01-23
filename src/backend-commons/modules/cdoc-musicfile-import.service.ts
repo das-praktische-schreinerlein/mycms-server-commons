@@ -122,72 +122,9 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                 }
                 container.FILES[path] = fileRes;
             }, function allCallBack(errors) {
-                const funcs = [];
-                for (const path in container.FILES) {
-                    if (!container.FILES.hasOwnProperty(path)) {
-                        continue;
-                    }
-
-                    console.warn('check path', path);
-                    const extension = pathLib.extname(path).replace('.', '');
-                    if (mediaTypes[extension] === 'AUDIO') {
-                        funcs.push(function () {
-                            return new Promise<string>((processorResolve) => {
-                                return me.checkMusicFile(path, records, container, container.FILES[path]['stat'])
-                                    .then(checkFileResult => {
-                                        if (!checkFileResult.readyToImport) {
-                                            console.warn('SKIPPING file: ' + path, checkFileResult);
-                                            processorResolve(path);
-                                            return Promise.resolve();
-                                        }
-
-                                        return me.mediaManager.readMusicTagsForMusicFile(baseDir + '/' + path)
-                                            .then(metaData => {
-                                                const mediaDataContainer: MusicMediaDataContainerType = {
-                                                    genreName: undefined,
-                                                    albumArtistName: undefined,
-                                                    albumGenreName: undefined,
-                                                    albumName: undefined,
-                                                    artistName: undefined,
-                                                    titleName: undefined,
-                                                    trackNr: undefined,
-                                                    releaseYear: undefined
-                                                }
-                                                me.mapAudioMetaDataToMusicMediaData(mappings, path, metaData, mediaDataContainer);
-
-                                                return me.checkMusicMediaData(path, records, container, mediaDataContainer,
-                                                    container.FILES[path]['stat'], metaData).then(checkMediaDataResult => {
-                                                    if (!checkMediaDataResult.readyToImport) {
-                                                        console.warn('SKIPPING file: ' + path, checkMediaDataResult);
-                                                        processorResolve(path);
-                                                        return Promise.resolve();
-                                                    }
-
-                                                    return me.createRecordsForMusicMediaData(mapper, responseMapper, path, records,
-                                                        container, mediaDataContainer, container.FILES[path]['stat'], metaData).then(() => {
-                                                        processorResolve(path);
-                                                        return Promise.resolve();
-                                                    });
-                                                });
-                                            });
-                                    }).catch(err => {
-                                        console.error('error while reading file: ' + path, err);
-                                        processorResolve(path);
-                                        return Promise.resolve();
-                                    });
-                            });
-                        });
-                    } else if (mediaTypes[extension] === 'AUDIOCOVER') {
-                        me.checkAndUpdateAlbumCover(container.ALBUMCOVERFILES, path);
-                    } else {
-                        console.warn('SKIP file - unknown mediaTypes', mediaTypes[extension], extension, path);
-                    }
-                }
-
-                Promise_serial(funcs, {parallelize: 1}).then(() => {
+                me.generateMusicDocsForImportContainer(container, mediaTypes, baseDir, mappings, mapper, responseMapper).then(records => {
                     return allresolve(records);
-                }).catch(function errorSearch(reason) {
-                    console.error('generateMediaDocRecordsFromMediaDir failed:', reason);
+                }).catch(reason => {
                     return allreject(reason);
                 });
 
@@ -197,6 +134,81 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                     });
                 }
             });
+        });
+    }
+
+    public generateMusicDocsForImportContainer(container: MediaImportContainerType, mediaTypes: {}, baseDir: string,
+                                                mappings: {}, mapper: Mapper,
+                                                responseMapper: GenericAdapterResponseMapper): Promise<R[]> {
+        const me = this;
+        const records: R[] = [];
+        const funcs = [];
+        for (const path in container.FILES) {
+            if (!container.FILES.hasOwnProperty(path)) {
+                continue;
+            }
+
+            console.warn('check path', path);
+            const extension = pathLib.extname(path).replace('.', '');
+            if (mediaTypes[extension] === 'AUDIO') {
+                funcs.push(function () {
+                    return new Promise<string>((processorResolve) => {
+                        return me.checkMusicFile(path, records, container, container.FILES[path]['stat'])
+                            .then(checkFileResult => {
+                                if (!checkFileResult.readyToImport) {
+                                    console.warn('SKIPPING file: ' + path, checkFileResult);
+                                    processorResolve(path);
+                                    return Promise.resolve();
+                                }
+
+                                return me.mediaManager.readMusicTagsForMusicFile(baseDir + '/' + path)
+                                    .then(metaData => {
+                                        const mediaDataContainer: MusicMediaDataContainerType = {
+                                            genreName: undefined,
+                                            albumArtistName: undefined,
+                                            albumGenreName: undefined,
+                                            albumName: undefined,
+                                            artistName: undefined,
+                                            titleName: undefined,
+                                            trackNr: undefined,
+                                            releaseYear: undefined
+                                        }
+                                        me.mapAudioMetaDataToMusicMediaData(mappings, path, metaData, mediaDataContainer);
+
+                                        return me.checkMusicMediaData(path, records, container, mediaDataContainer,
+                                            container.FILES[path]['stat'], metaData).then(checkMediaDataResult => {
+                                            if (!checkMediaDataResult.readyToImport) {
+                                                console.warn('SKIPPING file: ' + path, checkMediaDataResult);
+                                                processorResolve(path);
+                                                return Promise.resolve();
+                                            }
+
+                                            return me.createRecordsForMusicMediaData(mapper, responseMapper, path, records,
+                                                container, mediaDataContainer, container.FILES[path]['stat'], metaData).then(() => {
+                                                processorResolve(path);
+                                                return Promise.resolve();
+                                            });
+                                        });
+                                    });
+                            }).catch(err => {
+                                console.error('error while reading file: ' + path, err);
+                                processorResolve(path);
+                                return Promise.resolve();
+                            });
+                    });
+                });
+            } else if (mediaTypes[extension] === 'AUDIOCOVER') {
+                me.checkAndUpdateAlbumCover(container.ALBUMCOVERFILES, path);
+            } else {
+                console.warn('SKIP file - unknown mediaTypes', mediaTypes[extension], extension, path);
+            }
+        }
+
+        return Promise_serial(funcs, {parallelize: 1}).then(() => {
+            return Promise.resolve(records);
+        }).catch(function errorSearch(reason) {
+            console.error('generateMediaDocRecordsFromMediaDir failed:', reason);
+            return Promise.reject(reason);
         });
     }
 
