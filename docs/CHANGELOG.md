@@ -1,7 +1,23 @@
 # Changelog of MyCMS
  
 # Versions
- 
+
+## 5.3.0
+- bumped version up to be in sync with mycms-frontend-commons, mycms-commons
+
+### new features
+- none
+
+### improvements
+- none
+
+### bug fixes
+- none
+
+### breaking changes
+- none
+
+
 ## 5.2.0
 - backend: added admin-server-support
 
