@@ -24,7 +24,7 @@
   "private": true,
   "dependencies": {},
   "peerDependencies": {
-    "@dps/mycms-commons": ">= git://github.com/das-praktische-schreinerlein/mycms-commons.git#5.2.0",
+    "@dps/mycms-commons": ">= git://github.com/das-praktische-schreinerlein/mycms-commons.git#5.3.0",
     "@risingstack/protect": ">= 1.2.0",
     "axios": ">= 0.19.2",
     "body-parser": ">= 1.19.0",
