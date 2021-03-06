@@ -3,10 +3,10 @@
 # Versions
 
 ## 5.3.0
-- bumped version up to be in sync with mycms-frontend-commons, mycms-commons
+- commons: added ConfigInitializerCommand
 
 ### new features
-- none
+- commons: added ConfigInitializerCommand
 
 ### improvements
 - none
