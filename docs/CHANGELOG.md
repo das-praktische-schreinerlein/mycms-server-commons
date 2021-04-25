@@ -18,7 +18,7 @@
 - none
 
 
-## 5.2.0
+## 5.2.0 (2021-02-05)
 - backend: added admin-server-support
 
 ### new features
@@ -38,7 +38,7 @@
 - none
 
 
-## 5.1.0
+## 5.1.0 (2020-12-20)
 - added new modules for media-management
 - added and use ConfigurationTypes
 - added extended firewall-config
@@ -58,7 +58,7 @@
 - none
 
 
-## 5.0.0
+## 5.0.0 (2020-08-26)
 - upgraded all dev-dependencies to latest
 - build: use peerDependencies
 
@@ -76,7 +76,7 @@
 - build: use peerDependencies
 
 
-## 4.5.0
+## 4.5.0 (2020-07-11)
 - bumped version up to be in sync with mycms-frontend-commons, mycms-commons
 
 ### new features
@@ -92,7 +92,7 @@
 - none
 
 
-## 4.4.0
+## 4.4.0 (2020-05-24)
 - bumped version up to be in sync with mycms-frontend-commons
 
 ### new features
@@ -108,7 +108,7 @@
 - none
 
 
-## 4.3.0
+## 4.3.0 (2020-03-20)
 - improved build-process 
 
 ### new features
@@ -128,7 +128,7 @@
 - none
 
 
-## 4.2.0
+## 4.2.0 (2019-09-07)
 - bumped version up to be in sync with mycms
 
 ### new features
@@ -147,7 +147,7 @@
 - none
 
 
-## 4.1.0
+## 4.1.0 (2019-02-11)
 - improved build-process
 
 ### new features
@@ -163,7 +163,7 @@
 - none
 
 
-## 4.0.0
+## 4.0.0 (2018-11-07)
 - bumped version up to be in sync with mycms
 
 ### new features
@@ -179,7 +179,7 @@
 - none
 
 
-## 3.0.0
+## 3.0.0 (2018-10-10)
 - added playlist-export
 
 ### new features
@@ -195,7 +195,7 @@
 - none
 
 
-## 2.0.0
+## 2.0.0 (2018-09-13)
 - improved dependencies
 
 ### new features
@@ -211,7 +211,7 @@
 - none
 
 
-## 1.0.0
+## 1.0.0 (2018-09-02)
 - initial version based on mytourbook-1.5.0
 
 ### new features

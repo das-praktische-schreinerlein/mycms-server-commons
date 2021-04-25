@@ -52,3 +52,9 @@ Thumbs.db
 /src/out-tsc
 /cache/
 /package-lock.json
+/dist/CHANGELOG-news.md
+/dist/CHANGELOG-summary.md
+/dist/CHANGELOG-summary-short.md
+/dist/gitchangelog-release-201707.wiki
+/dist/gitlog.tmp
+/dist/releases.gitlog
