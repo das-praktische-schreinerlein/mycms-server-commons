@@ -2,7 +2,7 @@
  
 # Versions
 
-## 5.3.0
+## 5.3.0 (2021-05-13)
 - commons: added ConfigInitializerCommand
 
 ### new features
