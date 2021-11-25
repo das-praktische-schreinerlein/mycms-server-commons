@@ -2,7 +2,7 @@
  
 # Versions
 
-## 5.4.0
+## 5.4.0 (2021-11-25)
 - bumped version up to be in sync with mycms-frontend-commons, mycms-commons
 
 ### new features
