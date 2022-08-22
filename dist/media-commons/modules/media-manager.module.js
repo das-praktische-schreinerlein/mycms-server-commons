@@ -180,7 +180,7 @@ var MediaManagerModule = /** @class */ (function () {
                 gmCommand.write(destFile, function (err2) {
                     if (err2) {
                         console.error('ERROR - generateVideoPreview gmCommand - An error occurred:', srcFile, destFile, err2);
-                        return processorReject(err);
+                        return processorReject(err2);
                     }
                     var srcFileTime = fs.statSync(srcFile).mtime;
                     fs.utimesSync(destFile, srcFileTime, srcFileTime);
@@ -188,7 +188,7 @@ var MediaManagerModule = /** @class */ (function () {
                     var command2 = ffmpeg()
                         .on('error', function (err3) {
                         console.error('ERROR - generateVideoPreview - command2 An error occurred:', srcFile, destFile, err3);
-                        processorReject(err);
+                        processorReject(err3);
                     })
                         .on('end', function (err3, stdout2, stderr2) {
                         console.log('FINISHED - generateVideoPreview processing:', srcFile, destFile, err3);

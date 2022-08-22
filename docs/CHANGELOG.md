@@ -4,6 +4,7 @@
 
 ## 5.5.0
 - bumped version up to be in sync with mycms-frontend-commons, mycms-commons
+- fixed error-handling of media-manager
 
 ### new features
 - none
@@ -12,7 +13,7 @@
 - none
 
 ### bug fixes
-- none
+- backend: fixed error-handling of media-manager
 
 ### breaking changes
 - none
