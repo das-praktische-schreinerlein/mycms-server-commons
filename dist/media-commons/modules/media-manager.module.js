@@ -153,7 +153,7 @@ var MediaManagerModule = /** @class */ (function () {
             destFile = destFile + '.gif';
             if (flgIgnoreIfExists && fs.existsSync(destFile) && fs.existsSync(destFile + '.mp4')) {
                 console.log('SKIP - generateVideoPreview - already exists', destFile);
-                return Promise.resolve(destFile);
+                return processorResolve(destFile);
             }
             var fileError = file_utils_1.FileUtils.checkFilePath(destFile, true, false, false);
             if (fileError) {
