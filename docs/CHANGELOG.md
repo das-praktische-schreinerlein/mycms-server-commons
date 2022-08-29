@@ -2,7 +2,7 @@
  
 # Versions
 
-## 5.5.0
+## 5.5.0 (2022-08-29)
 - bumped version up to be in sync with mycms-frontend-commons, mycms-commons
 - fixed error-handling of media-manager
 
