@@ -2,6 +2,22 @@
  
 # Versions
 
+## 5.6.0
+- bumped version up to be in sync with mycms-server-commons, mycms-commons
+
+### new features
+- none
+
+### improvements
+- none
+
+### bug fixes
+- none
+
+### breaking changes
+- none
+
+
 ## 5.5.0 (2022-08-29)
 - bumped version up to be in sync with mycms-frontend-commons, mycms-commons
 - fixed error-handling of media-manager
