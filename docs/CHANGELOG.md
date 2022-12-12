@@ -4,9 +4,10 @@
 
 ## 5.6.0
 - bumped version up to be in sync with mycms-server-commons, mycms-commons
+- server-commons: added viewer-manager-module
 
 ### new features
-- none
+- server-commons: added viewer-manager-module
 
 ### improvements
 - none
