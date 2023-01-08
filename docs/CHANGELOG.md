@@ -10,7 +10,7 @@
 - server-commons: added viewer-manager-module
 
 ### improvements
-- none
+- build: upgraded typescript
 
 ### bug fixes
 - none

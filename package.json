@@ -71,7 +71,7 @@
     "remap-istanbul": "0.13.0",
     "rimraf": "3.0.2",
     "tslint": "6.1.2",
-    "typescript": "2.9.2",
+    "typescript": "3.2.4",
     "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#5.6.0",
     "@risingstack/protect": "1.2.0",
     "axios": "0.19.2",

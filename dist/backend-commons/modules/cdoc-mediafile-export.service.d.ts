@@ -17,7 +17,7 @@ export interface MediaExportProcessingOptions extends ExportProcessingOptions {
 }
 export declare type mediaType = 'audio' | 'image' | 'video';
 export declare abstract class CommonDocMediaFileExportManager<R extends CommonDocRecord> {
-    static readonly PROFILE_FLAT: string;
+    static readonly PROFILE_FLAT = "flat";
     protected readonly baseDir: string;
     protected readonly playlistService: CommonDocPlaylistService<R>;
     protected constructor(baseDir: string, playlistService: CommonDocPlaylistService<R>);
