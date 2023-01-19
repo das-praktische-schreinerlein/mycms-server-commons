@@ -2,7 +2,7 @@
  
 # Versions
 
-## 5.6.0
+## 5.6.0 (2023-01-19)
 - bumped version up to be in sync with mycms-server-commons, mycms-commons
 - server-commons: added viewer-manager-module
 
