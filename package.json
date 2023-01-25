@@ -1,6 +1,6 @@
 {
   "name": "@dps/mycms-server-commons",
-  "version": "5.6.0",
+  "version": "5.7.0",
   "license": "Apache-2.0",
   "main": "dist/",
   "types": "dist/",
@@ -24,7 +24,7 @@
   "private": true,
   "dependencies": {},
   "peerDependencies": {
-    "@dps/mycms-commons": ">= git://github.com/das-praktische-schreinerlein/mycms-commons.git#5.6.0",
+    "@dps/mycms-commons": ">= git://github.com/das-praktische-schreinerlein/mycms-commons.git#5.7.0",
     "@risingstack/protect": ">= 1.2.0",
     "axios": ">= 0.19.2",
     "body-parser": ">= 1.19.0",
@@ -72,7 +72,7 @@
     "rimraf": "3.0.2",
     "tslint": "6.1.2",
     "typescript": "3.2.4",
-    "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#5.6.0",
+    "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#5.7.0",
     "@risingstack/protect": "1.2.0",
     "axios": "0.19.2",
     "body-parser": "1.19.0",
