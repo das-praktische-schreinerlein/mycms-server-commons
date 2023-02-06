@@ -287,6 +287,11 @@ export abstract class CommonDocMediaManagerModule<R extends CommonDocRecord, F e
             + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'full/' +  tdocImage.fileName);
     }
 
+    public readMetadataForCommonDocImageRecord(tdocImage: BaseImageRecordType): Promise<{}> {
+        return this.mediaManager.readMetadataForImage(this.backendConfig.apiRoutePicturesStaticDir + '/'
+            + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'full/' +  tdocImage.fileName);
+    }
+
     public readMetadataForCommonDocVideoRecord(tdocVideo: BaseVideoRecordType): Promise<{}> {
         return new Promise<{}>((resolve, reject) => {
             ffmpeg.ffprobe(this.backendConfig.apiRouteVideosStaticDir + '/'

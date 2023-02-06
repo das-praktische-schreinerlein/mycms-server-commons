@@ -13,6 +13,7 @@ export declare class MediaManagerModule {
     generateVideoPreview(srcFile: string, destFile: string, width: number, flgIgnoreIfExists: boolean): Promise<{}>;
     generateVideoPreviewFromMediaDir(baseDir: string, destDir: string, width: number, flgIgnoreIfExists: boolean): Promise<{}>;
     readExifForImage(imagePath: string): Promise<{}>;
+    readMetadataForImage(imagePath: string): Promise<{}>;
     readMusicTagsForMusicFile(musicPath: string): Promise<IAudioMetadata>;
     scaleImage(imagePath: string, resultPath: string, width: number): Promise<{}>;
     scaleImageJimp(imagePath: string, resultPath: string, width: number, flgIgnoreIfExists?: boolean): Promise<{}>;

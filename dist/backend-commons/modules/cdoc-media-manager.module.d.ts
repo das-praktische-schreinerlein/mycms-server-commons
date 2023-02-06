@@ -55,6 +55,7 @@ export declare abstract class CommonDocMediaManagerModule<R extends CommonDocRec
         [key: string]: FileSystemDBSyncType;
     }): Promise<FileSystemDBSyncType[]>;
     readExifForCommonDocImageRecord(tdocImage: BaseImageRecordType): Promise<{}>;
+    readMetadataForCommonDocImageRecord(tdocImage: BaseImageRecordType): Promise<{}>;
     readMetadataForCommonDocVideoRecord(tdocVideo: BaseVideoRecordType): Promise<{}>;
     scaleCommonDocImageRecord(tdocImage: BaseImageRecordType, width: number): Promise<{}>;
     scaleCommonDocVideoRecord(tdocVideo: BaseVideoRecordType, width: number, addResolutionType: string): Promise<{}>;

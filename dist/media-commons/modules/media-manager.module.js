@@ -10,6 +10,7 @@ var ffmpeg = require("fluent-ffmpeg");
 var Promise_serial = require("promise-serial");
 var js_data_1 = require("js-data");
 var mm = require("music-metadata");
+var fastimagesize = require("fast-image-size");
 var MediaManagerModule = /** @class */ (function () {
     function MediaManagerModule(imageMagicPath, tmpDir) {
         this.tmpDir = tmpDir;
@@ -228,8 +229,42 @@ var MediaManagerModule = /** @class */ (function () {
         });
     };
     MediaManagerModule.prototype.readExifForImage = function (imagePath) {
-        return exif.read(imagePath);
+        return new Promise(function (resolve, reject) {
+            var fileError = file_utils_1.FileUtils.checkFilePath(imagePath, false, false, true);
+            if (fileError) {
+                return reject(fileError);
+            }
+            return fastimagesize(imagePath, function (imageSize) {
+                return exif.read(imagePath).then(function (data) {
+                    if (data) {
+                        data['nativeImage'] = {
+                            width: imageSize.width,
+                            height: imageSize.height,
+                            type: imageSize.type
+                        };
+                    }
+                    return resolve(data);
+                });
+            });
+        });
     };
+    MediaManagerModule.prototype.readMetadataForImage = function (imagePath) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var fileError = file_utils_1.FileUtils.checkFilePath(imagePath, false, false, true);
+            if (fileError) {
+                return reject(fileError);
+            }
+            _this.gm(imagePath)
+                .identify(function (err, data) {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve(data);
+            });
+        });
+    };
+    ;
     MediaManagerModule.prototype.readMusicTagsForMusicFile = function (musicPath) {
         return new Promise(function (resolve, reject) {
             mm.parseFile(musicPath)

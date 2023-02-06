@@ -1,0 +1,13 @@
+diff --git a/node_modules/fast-image-size/index.js b/node_modules/fast-image-size/index.js
+index 146a4db..1b3d526 100644
+--- a/node_modules/fast-image-size/index.js
++++ b/node_modules/fast-image-size/index.js
+@@ -71,7 +71,7 @@ module.exports = exports = function ( file_path, callback ) {
+ 			retInfo.height = (buffer_data[9] * 256) + buffer_data[8];
+ 
+ 		// Detect JPEG:
+-		} else if ( buffer_data[0] == 0xFF && buffer_data[1] == 0xD8 && buffer_data[2] == 0xFF && buffer_data[3] == 0xE0 ) {
++		} else if ( buffer_data[0] == 0xFF && buffer_data[1] == 0xD8) { // HINT removed jpeg only to get exif running
+ 		  retInfo.type = 'jpeg';
+ 		  var size = getJpgSize( buffer_data, retInfo );
+ 		  retInfo.width = size.width;

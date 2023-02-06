@@ -3,13 +3,13 @@
 # Versions
 
 ## 5.7.0
-- none
+- improved reading of image-metadata
 
 ### new features
 - none
 
 ### improvements
-- none
+- backend: improved reading of image-metadata
 
 ### bug fixes
 - none

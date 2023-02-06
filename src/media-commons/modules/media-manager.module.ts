@@ -10,6 +10,7 @@ import * as Promise_serial from 'promise-serial';
 import {utils} from 'js-data';
 import * as mm from 'music-metadata';
 import {IAudioMetadata} from 'music-metadata';
+import * as fastimagesize from 'fast-image-size';
 
 export class MediaManagerModule {
     private gm;
@@ -259,8 +260,47 @@ export class MediaManagerModule {
     }
 
     public readExifForImage(imagePath: string): Promise<{}> {
-        return exif.read(imagePath);
+        return new Promise<{}>((resolve, reject) => {
+            const fileError = FileUtils.checkFilePath(imagePath, false, false, true);
+            if (fileError) {
+                return reject(fileError);
+            }
+
+            return fastimagesize(imagePath, function (imageSize) {
+                return exif.read(imagePath).then(data => {
+                    if (!data) {
+                        data = {};
+                    }
+
+                    data['nativeImage'] = {
+                        width: imageSize.width,
+                        height: imageSize.height,
+                        type: imageSize.type
+                    }
+
+                    return resolve(data);
+                })
+            });
+        });
     }
+
+    public readMetadataForImage(imagePath: string): Promise<{}> {
+        return new Promise<{}>((resolve, reject) => {
+            const fileError = FileUtils.checkFilePath(imagePath, false, false, true);
+            if (fileError) {
+                return reject(fileError);
+            }
+
+            this.gm(imagePath)
+                .identify(function (err, data) {
+                    if (err) {
+                        return reject(err);
+                    }
+
+                    return resolve(data);
+                });
+        });
+    };
 
     public readMusicTagsForMusicFile(musicPath: string): Promise<IAudioMetadata> {
         return new Promise<IAudioMetadata>((resolve, reject) => {

@@ -200,6 +200,10 @@ var CommonDocMediaManagerModule = /** @class */ (function () {
         return this.mediaManager.readExifForImage(this.backendConfig.apiRoutePicturesStaticDir + '/'
             + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'full/' + tdocImage.fileName);
     };
+    CommonDocMediaManagerModule.prototype.readMetadataForCommonDocImageRecord = function (tdocImage) {
+        return this.mediaManager.readMetadataForImage(this.backendConfig.apiRoutePicturesStaticDir + '/'
+            + (this.backendConfig.apiRouteStoredPicturesResolutionPrefix || '') + 'full/' + tdocImage.fileName);
+    };
     CommonDocMediaManagerModule.prototype.readMetadataForCommonDocVideoRecord = function (tdocVideo) {
         var _this = this;
         return new Promise(function (resolve, reject) {
