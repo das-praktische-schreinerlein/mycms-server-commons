@@ -236,13 +236,14 @@ var MediaManagerModule = /** @class */ (function () {
             }
             return fastimagesize(imagePath, function (imageSize) {
                 return exif.read(imagePath).then(function (data) {
-                    if (data) {
-                        data['nativeImage'] = {
-                            width: imageSize.width,
-                            height: imageSize.height,
-                            type: imageSize.type
-                        };
+                    if (!data) {
+                        data = {};
                     }
+                    data['nativeImage'] = {
+                        width: imageSize.width,
+                        height: imageSize.height,
+                        type: imageSize.type
+                    };
                     return resolve(data);
                 });
             });
