@@ -57,6 +57,7 @@ export declare abstract class CommonDocMusicFileImportManager<R extends BaseMusi
     createRecordsForMusicMediaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, audioMetaData: IAudioMetadata, extractCoverFile?: boolean): Promise<string>;
     readMetadataFromAudioRecord(fileName: string): Promise<IAudioMetadata>;
     createRecordsForMusicMediaMetaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, audioMetaData: IAudioMetadata, mediaMeta: BaseMediaMetaRecordType, extractCoverFile?: boolean): Promise<string>;
+    extractCoverFile(audioFileName: string, album: string, metaData: IAudioMetadata, coverContainer: {}): {};
     extractAndSetCoverFile(mdoc: R, metaData: IAudioMetadata): Promise<boolean>;
     checkAndUpdateAlbumCover(container: {}, path: string): void;
     mapAudioMetaDataToMusicMediaData(mappings: {}, path: string, metaData: IAudioMetadata, mediaDataContainer: MusicMediaDataContainerType): void;

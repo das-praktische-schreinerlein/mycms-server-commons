@@ -263,6 +263,7 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                                               audioMetaData: IAudioMetadata, mediaMeta: BaseMediaMetaRecordType, extractCoverFile?: boolean): Promise<string> {
         const values = {};
 
+        // map genre
         const normalizedGenreName = NameUtils.normalizeNames(mediaDataContainer.genreName, this.unknownGenre);
         const genreKey = NameUtils.normalizeTechnicalNames(normalizedGenreName);
         const normalizedGenreArtistName = 'VA_' + normalizedGenreName;
@@ -299,6 +300,7 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         }
         values['genre_id_i'] = genre.genreId;
 
+        // map artist
         const normalizedArtistName = NameUtils.normalizeNames(mediaDataContainer.artistName, this.unknownArtist);
         const artistKey = NameUtils.normalizeTechnicalNames(normalizedArtistName);
         let artist: R = <R>container.ARTIST[artistKey];
@@ -320,10 +322,16 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         }
         values['artist_id_i'] = artist.artistId;
 
+        // extract cover
+        const normalizedAlbumName = NameUtils.normalizeNames(mediaDataContainer.albumName, this.unknownAlbum)
         const dir = pathLib.dirname(path);
+        if (extractCoverFile) {
+            this.extractCoverFile(path, normalizedAlbumName, audioMetaData, container.ALBUMCOVERFILES[dir]);
+        }
+
+        // map album
         const coverFile = container.ALBUMCOVERFILES[dir];
         const normalizedAlbumArtistName = NameUtils.normalizeNames(mediaDataContainer.albumArtistName, normalizedArtistName)
-        const normalizedAlbumName = NameUtils.normalizeNames(mediaDataContainer.albumName, this.unknownAlbum)
         const albumKey = NameUtils.normalizeTechnicalNames(normalizedAlbumArtistName + normalizedAlbumName + dir);
         const albumFolderKey = NameUtils.normalizeTechnicalNames(normalizedAlbumName + dir);
         let album: R = <R>container.ALBUM[albumKey];
@@ -379,6 +387,7 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
             }
         }
 
+        // map title
         values['album_id_i'] = album.albumId;
         values['a_fav_url_txt'] = path;
         values['i_fav_url_txt'] = coverFile;
@@ -406,13 +415,44 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         records.push(mdoc);
         container.AUDIO[albumKey + mediaDataContainer.titleName] = mdoc;
 
-        if (extractCoverFile) {
-            return this.extractAndSetCoverFile(mdoc, audioMetaData).then(() => {
-                return Promise.resolve(albumKey + mediaDataContainer.titleName);
-            });
+        return Promise.resolve(albumKey + mediaDataContainer.titleName);
+    }
+
+    public extractCoverFile(audioFileName: string, album: string, metaData: IAudioMetadata, coverContainer: {}): {} {
+        if (metaData.common.picture === undefined || metaData.common.picture.length < 1) {
+            console.debug('SKIPPED - no coverfile in metadata of audio',
+                audioFileName);
+            return Promise.resolve(false);
         }
 
-        return Promise.resolve(albumKey + mediaDataContainer.titleName);
+        const destDir = pathLib.dirname(audioFileName);
+        let coverFile = destDir + '/cover.jpg';
+        const err = FileUtils.checkFilePath(coverFile, false,  false, false);
+        if (err) {
+            return Promise.reject('coverFile is invalid: ' + err);
+        }
+
+        if (fs.existsSync(coverFile)) {
+            this.checkAndUpdateAlbumCover(coverContainer, coverFile);
+        } else {
+            const mimes = this.getMimeTypeToFileExtension();
+            for (const picture of metaData.common.picture) {
+                const ext = mimes[picture.format] || '.unknown';
+                const fileName = destDir + '/' +
+                    ('extract-albumcover-' +
+                        NameUtils.normalizeFileNames(album) +
+                        '-' +
+                        NameUtils.normalizeFileNames(picture.type) +
+                        ext).replace(/ /g, '_');
+                this.checkAndUpdateAlbumCover(coverContainer, fileName);
+                if (!fs.existsSync(fileName)) {
+                    console.log('created coverfile', audioFileName, fileName);
+                    fs.writeFileSync(fileName, metaData.common.picture[0].data);
+                }
+            }
+        }
+
+        return coverContainer;
     }
 
     public extractAndSetCoverFile(mdoc: R, metaData: IAudioMetadata): Promise<boolean> {
@@ -429,6 +469,7 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
             return Promise.resolve(false);
         }
 
+
         if (metaData.common.picture === undefined || metaData.common.picture.length < 1) {
             console.debug('SKIPPED - no coverfile in metadata of audio',
                 mdoc.id, mdocAudio.fileName);
@@ -436,34 +477,9 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         }
 
         const destDir = pathLib.dirname(this.baseDir + '/' + mdocAudio.fileName);
-        let coverFile = destDir + '/cover.jpg';
-        const err = FileUtils.checkFilePath(coverFile, false,  false, false);
-        if (err) {
-            return Promise.reject('coverFile is invalid: ' + err);
-        }
         const coverContainer = {};
-
-        if (fs.existsSync(coverFile)) {
-            this.checkAndUpdateAlbumCover(coverContainer, coverFile);
-        } else {
-            const mimes = this.getMimeTypeToFileExtension();
-            for (const picture of metaData.common.picture) {
-                const ext = mimes[picture.format] || '.unknown';
-                const fileName = destDir + '/' +
-                    ('extract-albumcover-' +
-                        NameUtils.normalizeFileNames(mdoc.album) +
-                        '-' +
-                        NameUtils.normalizeFileNames(picture.type) +
-                        ext).replace(/ /g, '_');
-                this.checkAndUpdateAlbumCover(coverContainer, fileName);
-                if (!fs.existsSync(fileName)) {
-                    console.log('created coverfile', mdoc.id, mdoc.album, mdoc.name, fileName);
-                    fs.writeFileSync(fileName, metaData.common.picture[0].data);
-                }
-            }
-        }
-
-        coverFile = coverContainer[destDir];
+        this.extractCoverFile(this.baseDir + '/' + mdocAudio.fileName, mdoc.album, metaData, coverContainer);
+        const coverFile = coverContainer[destDir];
         if (!coverFile) {
             console.debug('SKIPPED - no coverfile for audio',
                 mdoc.id, mdocAudio.fileName);
