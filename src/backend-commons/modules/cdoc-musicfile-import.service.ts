@@ -5,7 +5,9 @@ import * as fs from 'fs';
 import * as Promise_serial from 'promise-serial';
 import * as readdirp from 'readdirp';
 import {CommonDocRecord} from '@dps/mycms-commons/dist/search-commons/model/records/cdoc-entity-record';
-import {GenericAdapterResponseMapper} from '@dps/mycms-commons/dist/search-commons/services/generic-adapter-response.mapper';
+import {
+    GenericAdapterResponseMapper
+} from '@dps/mycms-commons/dist/search-commons/services/generic-adapter-response.mapper';
 import {BaseAudioRecord} from '@dps/mycms-commons/dist/search-commons/model/records/baseaudio-record';
 import {BaseImageRecord} from '@dps/mycms-commons/dist/search-commons/model/records/baseimage-record';
 import {MediaManagerModule} from '../../media-commons/modules/media-manager.module';
@@ -15,6 +17,10 @@ import {
 } from '@dps/mycms-commons/dist/search-commons/model/records/basemusic-record';
 import {NameUtils} from '@dps/mycms-commons/dist/commons/utils/name.utils';
 import {FileUtils} from '@dps/mycms-commons/dist/commons/utils/file.utils';
+import {BeanUtils} from '@dps/mycms-commons/dist/commons/utils/bean.utils';
+import {DateUtils} from '@dps/mycms-commons/dist/commons/utils/date.utils';
+import {BaseMediaMetaRecordType} from '@dps/mycms-commons/dist/search-commons/model/records/basemediameta-record';
+import {DescValidationRule} from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
 
 export interface MediaImportRecordContainerType {
     [key: string]: BaseMusicMediaDocRecordType & BaseMusicMediaDocRecordReferencesType & CommonDocRecord;
@@ -62,13 +68,14 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
     public unknownAlbum = 'Unbekanntes Album';
 
     protected readonly baseDir: string;
+    protected readonly jsonValidationRule = new DescValidationRule(false);
 
     protected constructor(baseDir: string, protected mediaManager: MediaManagerModule) {
         this.baseDir = baseDir;
     }
 
     public generateMusicDocRecordsFromMediaDir(mapper: Mapper, responseMapper: GenericAdapterResponseMapper,
-                                               baseDir: string, mappings: {}): Promise<R[]> {
+                                               baseDir: string, mappings: {}, extractCoverFile?: boolean): Promise<R[]> {
         const me = this;
         const normalizedMapping = JSON.parse(
             JSON.stringify(mappings).replace(/"([^"]+)":/g, function($0, $1) {
@@ -122,7 +129,8 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                 }
                 container.FILES[path] = fileRes;
             }, function allCallBack(errors) {
-                me.generateMusicDocsForImportContainer(container, mediaTypes, baseDir, mappings, mapper, responseMapper).then(records => {
+                me.generateMusicDocsForImportContainer(container, mediaTypes, baseDir, mappings, mapper,
+                    responseMapper, extractCoverFile).then(records => {
                     return allresolve(records);
                 }).catch(reason => {
                     return allreject(reason);
@@ -138,8 +146,9 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
     }
 
     public generateMusicDocsForImportContainer(container: MediaImportContainerType, mediaTypes: {}, baseDir: string,
-                                                mappings: {}, mapper: Mapper,
-                                                responseMapper: GenericAdapterResponseMapper): Promise<R[]> {
+                                               mappings: {}, mapper: Mapper,
+                                               responseMapper: GenericAdapterResponseMapper,
+                                               extractCoverFile?: boolean): Promise<R[]> {
         const me = this;
         const records: R[] = [];
         const funcs = [];
@@ -184,7 +193,8 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                                             }
 
                                             return me.createRecordsForMusicMediaData(mapper, responseMapper, path, records,
-                                                container, mediaDataContainer, container.FILES[path]['stat'], metaData).then(() => {
+                                                container, mediaDataContainer, container.FILES[path]['stat'], metaData,
+                                                extractCoverFile).then(() => {
                                                 processorResolve(path);
                                                 return Promise.resolve();
                                             });
@@ -229,17 +239,33 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         });
     }
 
-    public createRecordsForMusicMediaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[],
+    public createRecordsForMusicMediaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper,
+                                          path: string, records: R[],
                                           container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType,
-                                          fileStats: fs.Stats, metadata: IAudioMetadata): Promise<{}> {
-        const dir = pathLib.dirname(path);
-        const coverFile = container.ALBUMCOVERFILES[dir];
-        const values = {
-        };
+                                          fileStats: fs.Stats, audioMetaData: IAudioMetadata,
+                                          extractCoverFile?: boolean): Promise<string> {
+        const mediaMeta = this.createMediaMetaRecord({fileName: path});
+        const absolutePath = this.baseDir + '/' + path;
+        this.mapAudioDataToMediaMetaDoc('new', absolutePath, mediaMeta, audioMetaData, fileStats);
+
+        return this.createRecordsForMusicMediaMetaData(mapper, responseMapper, path, records, container,
+            mediaDataContainer, audioMetaData, mediaMeta, extractCoverFile);
+    }
+
+
+    public readMetadataFromAudioRecord(fileName: string): Promise<IAudioMetadata> {
+        return this.mediaManager.readMusicTagsForMusicFile(fileName);
+    }
+
+    public createRecordsForMusicMediaMetaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper,
+                                              path: string, records: R[],
+                                              container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType,
+                                              audioMetaData: IAudioMetadata, mediaMeta: BaseMediaMetaRecordType, extractCoverFile?: boolean): Promise<string> {
+        const values = {};
 
         const normalizedGenreName = NameUtils.normalizeNames(mediaDataContainer.genreName, this.unknownGenre);
-        const normalizedGenreArtistName = 'VA_' + normalizedGenreName;
         const genreKey = NameUtils.normalizeTechnicalNames(normalizedGenreName);
+        const normalizedGenreArtistName = 'VA_' + normalizedGenreName;
         const genreArtistKey = NameUtils.normalizeTechnicalNames(normalizedGenreArtistName);
         let genre: R = <R>container.GENRE[genreKey];
         let genreArtist: R = <R>container.GENREARTISTS[genreKey];
@@ -294,6 +320,8 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         }
         values['artist_id_i'] = artist.artistId;
 
+        const dir = pathLib.dirname(path);
+        const coverFile = container.ALBUMCOVERFILES[dir];
         const normalizedAlbumArtistName = NameUtils.normalizeNames(mediaDataContainer.albumArtistName, normalizedArtistName)
         const normalizedAlbumName = NameUtils.normalizeNames(mediaDataContainer.albumName, this.unknownAlbum)
         const albumKey = NameUtils.normalizeTechnicalNames(normalizedAlbumArtistName + normalizedAlbumName + dir);
@@ -363,25 +391,28 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         values['name_s'] = mediaDataContainer.titleName;
         values['trackno_i'] = mediaDataContainer.trackNr;
 
-        metadata.common.picture = undefined;
-        values['data_tech_metadata_txt'] = JSON.stringify({ metadata: {
-                common: metadata.common,
-                format: metadata.format,
-                quality: metadata.quality
-            }}, (key, value) => { if (value !== null) { return value }});
-        values['data_tech_filesize_i'] = fileStats ? fileStats.size : undefined;
-        values['data_tech_filecreated_dt'] = fileStats ? fileStats.mtime : undefined;
-        values['data_tech_duration_i'] = metadata && metadata.format && metadata.format.duration
-            ? parseFloat(metadata.format.duration.toString()).toFixed()
-            : undefined;
         values['keywords_txt'] = ['Genre_' + NameUtils.normalizeKwNames(normalizedGenreName),
             'Artist_' + NameUtils.normalizeKwNames(normalizedAlbumArtistName),
             'KW_TODOKEYWORDS'].join(', ');
+
+        values['mediameta_duration_i'] = BeanUtils.getValue(mediaMeta, 'dur');
+        values['mediameta_filecreated_dt'] = BeanUtils.getValue(mediaMeta, 'fileCreated');
+        values['mediameta_filename_s'] = BeanUtils.getValue(mediaMeta, 'fileName');
+        values['mediameta_filesize_i'] = BeanUtils.getValue(mediaMeta, 'fileSize');
+        values['mediameta_metadata_txt'] = BeanUtils.getValue(mediaMeta, 'metadata');
+        values['mediameta_recordingdate_dt'] = BeanUtils.getValue(mediaMeta, 'recordingDate');
+
         const mdoc = <R><any>responseMapper.mapResponseDocument(mapper, values, {});
         records.push(mdoc);
         container.AUDIO[albumKey + mediaDataContainer.titleName] = mdoc;
 
-        return Promise.resolve(values);
+        if (extractCoverFile) {
+            return this.extractAndSetCoverFile(mdoc, audioMetaData).then(() => {
+                return Promise.resolve(albumKey + mediaDataContainer.titleName);
+            });
+        }
+
+        return Promise.resolve(albumKey + mediaDataContainer.titleName);
     }
 
     public extractAndSetCoverFile(mdoc: R, metaData: IAudioMetadata): Promise<boolean> {
@@ -390,45 +421,58 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
             return Promise.resolve(false);
         }
 
+        const mdocAudio: BaseAudioRecord = mdocAudios[0];
         const mdocImages = this.getImagesFromRecord(mdoc);
-        if ((mdocImages !== undefined && mdocImages.length > 0)
-            || metaData.common.picture === undefined || metaData.common.picture.length < 1) {
+        if (mdocImages !== undefined && mdocImages.length > 0) {
+            console.debug('SKIPPED - coverfile already set for audio',
+                mdoc.id, mdocAudio.fileName, mdocImages[0].fileName);
             return Promise.resolve(false);
         }
 
-        const mdocAudio: BaseAudioRecord = mdocAudios[0];
+        if (metaData.common.picture === undefined || metaData.common.picture.length < 1) {
+            console.debug('SKIPPED - no coverfile in metadata of audio',
+                mdoc.id, mdocAudio.fileName);
+            return Promise.resolve(false);
+        }
+
         const destDir = pathLib.dirname(this.baseDir + '/' + mdocAudio.fileName);
-        const coverFile = destDir + '/cover.jpg';
+        let coverFile = destDir + '/cover.jpg';
         const err = FileUtils.checkFilePath(coverFile, false,  false, false);
         if (err) {
             return Promise.reject('coverFile is invalid: ' + err);
         }
-        if (fs.existsSync(coverFile)) {
-            return Promise.resolve(false);
-        }
-
-        const mimes = this.getMimeTypeToFileExtension();
         const coverContainer = {};
-        for (const picture of metaData.common.picture) {
-            const ext = mimes[picture.format] || '.unknown';
-            const fileName = destDir + '/' +
-                ('extract-albumcover-' +
-                    NameUtils.normalizeFileNames(mdoc.album) +
-                    '-' +
-                    NameUtils.normalizeFileNames(picture.type) +
-                    ext).replace(/ /g, '_');
-            this.checkAndUpdateAlbumCover(coverContainer, fileName);
-            if (!fs.existsSync(fileName)) {
-                fs.writeFileSync(fileName, metaData.common.picture[0].data);
+
+        if (fs.existsSync(coverFile)) {
+            this.checkAndUpdateAlbumCover(coverContainer, coverFile);
+        } else {
+            const mimes = this.getMimeTypeToFileExtension();
+            for (const picture of metaData.common.picture) {
+                const ext = mimes[picture.format] || '.unknown';
+                const fileName = destDir + '/' +
+                    ('extract-albumcover-' +
+                        NameUtils.normalizeFileNames(mdoc.album) +
+                        '-' +
+                        NameUtils.normalizeFileNames(picture.type) +
+                        ext).replace(/ /g, '_');
+                this.checkAndUpdateAlbumCover(coverContainer, fileName);
+                if (!fs.existsSync(fileName)) {
+                    console.log('created coverfile', mdoc.id, mdoc.album, mdoc.name, fileName);
+                    fs.writeFileSync(fileName, metaData.common.picture[0].data);
+                }
             }
         }
 
-        if (!coverContainer[destDir]) {
+        coverFile = coverContainer[destDir];
+        if (!coverFile) {
+            console.debug('SKIPPED - no coverfile for audio',
+                mdoc.id, mdocAudio.fileName);
             return Promise.resolve(false);
         }
 
-        this.appendCoverImageToRecord(mdoc, coverContainer[destDir]);
-        console.log('created coverfile', mdoc.id, mdoc.album, mdoc.name, coverContainer[destDir]);
+        this.appendCoverImageToRecord(mdoc, coverFile);
+        console.log('append coverfile',
+            mdoc.id, mdocAudio.fileName, mdoc.album, mdoc.name, coverFile);
 
         return Promise.resolve(true);
     }
@@ -559,8 +603,128 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         };
     }
 
+    public mapAudioDataToMediaMetaDoc(reference: string, fullFilePath: string, mediaMeta: BaseMediaMetaRecordType,
+                                      audioMetaData: IAudioMetadata, fileStats: fs.Stats): boolean {
+        let updateFlag = false;
+
+        if (audioMetaData) {
+            const newRecordingDate = this.extractAudioRecordingDate(audioMetaData);
+            if (DateUtils.dateToLocalISOString(mediaMeta.recordingDate) !== DateUtils.dateToLocalISOString(newRecordingDate)) {
+                console.debug('mapAudioDataToMediaMetaDoc: recordingDate changed for id old/new', reference,
+                    mediaMeta.recordingDate, newRecordingDate);
+
+                updateFlag = true;
+                mediaMeta.recordingDate = DateUtils.dateToLocalISOString(newRecordingDate);
+            }
+
+            const newDuration = this.extractAudioDuration(audioMetaData);
+            if (mediaMeta.dur !== newDuration) {
+                console.debug('mapAudioDataToMediaMetaDoc: duration changed for id old/new', reference, mediaMeta.dur, newDuration);
+
+                updateFlag = true;
+                mediaMeta.dur = newDuration;
+            }
+        } else {
+            mediaMeta.dur = undefined;
+            mediaMeta.resolution = undefined;
+            mediaMeta.recordingDate = undefined;
+            console.debug('mapAudioDataToMediaMetaDoc: metadata empty so reset duration/resolution/recordingDate for id old/new',
+                reference);
+        }
+
+        const metadata = this.prepareAudioMetadata(audioMetaData)
+        updateFlag = this.mapMetaDataToCommonMediaDoc(fullFilePath, mediaMeta, metadata, reference, fileStats) || updateFlag;
+
+        return updateFlag;
+    }
+
+    public mapMetaDataToCommonMediaDoc(mediaFilePath: string, mediaMeta: BaseMediaMetaRecordType, metadata: any,
+                                       reference: string, fileStats: fs.Stats) {
+        let updateFlag = false;
+        const newMetadata = this.jsonValidationRule.sanitize(
+            JSON.stringify({metadata: metadata}, (key, value) => {
+                if (value !== null) {
+                    return value
+                }
+            })
+                .replace('\\n', ' ').replace('\\r', '')
+        );
+
+        const newFilesize = fileStats
+            ? fileStats.size
+            : undefined;
+        const newFilecreated = fileStats
+            ? fileStats.mtime
+            : undefined;
+
+        if (mediaMeta.metadata !== newMetadata) {
+            console.debug('mapMetaDataToCommonMediaDoc: metadata changed for id old/new', reference,
+                '\n   OLD:\n', mediaMeta.metadata,
+                '\n   NEW:\n', newMetadata);
+
+            updateFlag = true;
+            mediaMeta.metadata = newMetadata;
+        }
+
+        if (mediaMeta.fileSize !== newFilesize) {
+            console.debug('mapMetaDataToCommonMediaDoc: fileSize changed for id old/new', reference, mediaMeta.fileSize, newFilesize);
+
+            updateFlag = true;
+            mediaMeta.fileSize = newFilesize;
+        }
+
+        if (DateUtils.dateToLocalISOString(mediaMeta.fileCreated) !== DateUtils.dateToLocalISOString(newFilecreated)) {
+            console.debug('mapMetaDataToCommonMediaDoc: fileCreated changed for id old/new', reference, mediaMeta.fileCreated,
+                newFilecreated, DateUtils.dateToLocalISOString(mediaMeta.fileCreated), DateUtils.dateToLocalISOString(newFilecreated));
+
+            updateFlag = true;
+            mediaMeta.fileCreated = DateUtils.dateToLocalISOString(newFilecreated);
+        }
+
+        return updateFlag;
+    }
+
+    public prepareAudioMetadata(audioMetaData: IAudioMetadata): IAudioMetadata {
+        if (!audioMetaData) {
+            return undefined;
+        }
+
+        const newMetadata: IAudioMetadata = {
+            common: audioMetaData.common,
+            format: audioMetaData.format,
+            quality: audioMetaData.quality,
+            native: undefined
+        };
+
+        if (BeanUtils.getValue(newMetadata, 'common.picture')) {
+            newMetadata['common']['picture'] = undefined;
+        }
+
+        return newMetadata;
+    }
+
+    public extractAudioDuration(audioMetaData: IAudioMetadata): number {
+        return audioMetaData.format && audioMetaData.format.duration
+            ? Math.ceil(audioMetaData.format.duration)
+            : undefined;
+    }
+
+    public extractAudioRecordingDate(audioMetaData: IAudioMetadata): Date {
+        if (!BeanUtils.getValue(audioMetaData, 'common.year')) {
+            return undefined;
+        }
+
+        const localDate = new Date();
+        localDate.setHours(12, 0, 0, 0);
+        localDate.setFullYear(Number(BeanUtils.getValue(audioMetaData, 'common.year')), 5, 30);
+
+        return localDate;
+    }
+
     protected abstract appendCoverImageToRecord(mdoc: R, coverFile: string);
     protected abstract appendLinkedArtistToAlbumRecord(mapper: Mapper, mdoc: R, artistId: number, artistName: string);
     protected abstract getAudiosFromRecord(mdoc: R): BaseAudioRecord[];
     protected abstract getImagesFromRecord(mdoc: R): BaseImageRecord[];
+    protected abstract createMediaMetaRecord(values: {}): BaseMediaMetaRecordType;
+
 }

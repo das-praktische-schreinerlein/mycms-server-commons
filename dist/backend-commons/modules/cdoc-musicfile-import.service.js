@@ -6,15 +6,19 @@ var Promise_serial = require("promise-serial");
 var readdirp = require("readdirp");
 var name_utils_1 = require("@dps/mycms-commons/dist/commons/utils/name.utils");
 var file_utils_1 = require("@dps/mycms-commons/dist/commons/utils/file.utils");
+var bean_utils_1 = require("@dps/mycms-commons/dist/commons/utils/bean.utils");
+var date_utils_1 = require("@dps/mycms-commons/dist/commons/utils/date.utils");
+var generic_validator_util_1 = require("@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util");
 var CommonDocMusicFileImportManager = /** @class */ (function () {
     function CommonDocMusicFileImportManager(baseDir, mediaManager) {
         this.mediaManager = mediaManager;
         this.unknownGenre = 'Unbekanntes Genre';
         this.unknownArtist = 'Unbekannter Artist';
         this.unknownAlbum = 'Unbekanntes Album';
+        this.jsonValidationRule = new generic_validator_util_1.DescValidationRule(false);
         this.baseDir = baseDir;
     }
-    CommonDocMusicFileImportManager.prototype.generateMusicDocRecordsFromMediaDir = function (mapper, responseMapper, baseDir, mappings) {
+    CommonDocMusicFileImportManager.prototype.generateMusicDocRecordsFromMediaDir = function (mapper, responseMapper, baseDir, mappings, extractCoverFile) {
         var me = this;
         var normalizedMapping = JSON.parse(JSON.stringify(mappings).replace(/"([^"]+)":/g, function ($0, $1) {
             var value = $1.toLocaleLowerCase();
@@ -62,7 +66,7 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
                 }
                 container.FILES[path] = fileRes;
             }, function allCallBack(errors) {
-                me.generateMusicDocsForImportContainer(container, mediaTypes, baseDir, mappings, mapper, responseMapper).then(function (records) {
+                me.generateMusicDocsForImportContainer(container, mediaTypes, baseDir, mappings, mapper, responseMapper, extractCoverFile).then(function (records) {
                     return allresolve(records);
                 }).catch(function (reason) {
                     return allreject(reason);
@@ -75,7 +79,7 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
             });
         });
     };
-    CommonDocMusicFileImportManager.prototype.generateMusicDocsForImportContainer = function (container, mediaTypes, baseDir, mappings, mapper, responseMapper) {
+    CommonDocMusicFileImportManager.prototype.generateMusicDocsForImportContainer = function (container, mediaTypes, baseDir, mappings, mapper, responseMapper, extractCoverFile) {
         var me = this;
         var records = [];
         var funcs = [];
@@ -114,7 +118,7 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
                                         processorResolve(path);
                                         return Promise.resolve();
                                     }
-                                    return me.createRecordsForMusicMediaData(mapper, responseMapper, path, records, container, mediaDataContainer, container.FILES[path]['stat'], metaData).then(function () {
+                                    return me.createRecordsForMusicMediaData(mapper, responseMapper, path, records, container, mediaDataContainer, container.FILES[path]['stat'], metaData, extractCoverFile).then(function () {
                                         processorResolve(path);
                                         return Promise.resolve();
                                     });
@@ -157,13 +161,20 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
             hint: 'musicmetadata is valid'
         });
     };
-    CommonDocMusicFileImportManager.prototype.createRecordsForMusicMediaData = function (mapper, responseMapper, path, records, container, mediaDataContainer, fileStats, metadata) {
-        var dir = pathLib.dirname(path);
-        var coverFile = container.ALBUMCOVERFILES[dir];
+    CommonDocMusicFileImportManager.prototype.createRecordsForMusicMediaData = function (mapper, responseMapper, path, records, container, mediaDataContainer, fileStats, audioMetaData, extractCoverFile) {
+        var mediaMeta = this.createMediaMetaRecord({ fileName: path });
+        var absolutePath = this.baseDir + '/' + path;
+        this.mapAudioDataToMediaMetaDoc('new', absolutePath, mediaMeta, audioMetaData, fileStats);
+        return this.createRecordsForMusicMediaMetaData(mapper, responseMapper, path, records, container, mediaDataContainer, audioMetaData, mediaMeta, extractCoverFile);
+    };
+    CommonDocMusicFileImportManager.prototype.readMetadataFromAudioRecord = function (fileName) {
+        return this.mediaManager.readMusicTagsForMusicFile(fileName);
+    };
+    CommonDocMusicFileImportManager.prototype.createRecordsForMusicMediaMetaData = function (mapper, responseMapper, path, records, container, mediaDataContainer, audioMetaData, mediaMeta, extractCoverFile) {
         var values = {};
         var normalizedGenreName = name_utils_1.NameUtils.normalizeNames(mediaDataContainer.genreName, this.unknownGenre);
-        var normalizedGenreArtistName = 'VA_' + normalizedGenreName;
         var genreKey = name_utils_1.NameUtils.normalizeTechnicalNames(normalizedGenreName);
+        var normalizedGenreArtistName = 'VA_' + normalizedGenreName;
         var genreArtistKey = name_utils_1.NameUtils.normalizeTechnicalNames(normalizedGenreArtistName);
         var genre = container.GENRE[genreKey];
         var genreArtist = container.GENREARTISTS[genreKey];
@@ -215,6 +226,8 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
             container.ARTIST[artistKey] = artist;
         }
         values['artist_id_i'] = artist.artistId;
+        var dir = pathLib.dirname(path);
+        var coverFile = container.ALBUMCOVERFILES[dir];
         var normalizedAlbumArtistName = name_utils_1.NameUtils.normalizeNames(mediaDataContainer.albumArtistName, normalizedArtistName);
         var normalizedAlbumName = name_utils_1.NameUtils.normalizeNames(mediaDataContainer.albumName, this.unknownAlbum);
         var albumKey = name_utils_1.NameUtils.normalizeTechnicalNames(normalizedAlbumArtistName + normalizedAlbumName + dir);
@@ -281,68 +294,75 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
         values['album_txt'] = normalizedAlbumName;
         values['name_s'] = mediaDataContainer.titleName;
         values['trackno_i'] = mediaDataContainer.trackNr;
-        metadata.common.picture = undefined;
-        values['data_tech_metadata_txt'] = JSON.stringify({ metadata: {
-                common: metadata.common,
-                format: metadata.format,
-                quality: metadata.quality
-            } }, function (key, value) { if (value !== null) {
-            return value;
-        } });
-        values['data_tech_filesize_i'] = fileStats ? fileStats.size : undefined;
-        values['data_tech_filecreated_dt'] = fileStats ? fileStats.mtime : undefined;
-        values['data_tech_duration_i'] = metadata && metadata.format && metadata.format.duration
-            ? parseFloat(metadata.format.duration.toString()).toFixed()
-            : undefined;
         values['keywords_txt'] = ['Genre_' + name_utils_1.NameUtils.normalizeKwNames(normalizedGenreName),
             'Artist_' + name_utils_1.NameUtils.normalizeKwNames(normalizedAlbumArtistName),
             'KW_TODOKEYWORDS'].join(', ');
+        values['mediameta_duration_i'] = bean_utils_1.BeanUtils.getValue(mediaMeta, 'dur');
+        values['mediameta_filecreated_dt'] = bean_utils_1.BeanUtils.getValue(mediaMeta, 'fileCreated');
+        values['mediameta_filename_s'] = bean_utils_1.BeanUtils.getValue(mediaMeta, 'fileName');
+        values['mediameta_filesize_i'] = bean_utils_1.BeanUtils.getValue(mediaMeta, 'fileSize');
+        values['mediameta_metadata_txt'] = bean_utils_1.BeanUtils.getValue(mediaMeta, 'metadata');
+        values['mediameta_recordingdate_dt'] = bean_utils_1.BeanUtils.getValue(mediaMeta, 'recordingDate');
         var mdoc = responseMapper.mapResponseDocument(mapper, values, {});
         records.push(mdoc);
         container.AUDIO[albumKey + mediaDataContainer.titleName] = mdoc;
-        return Promise.resolve(values);
+        if (extractCoverFile) {
+            return this.extractAndSetCoverFile(mdoc, audioMetaData).then(function () {
+                return Promise.resolve(albumKey + mediaDataContainer.titleName);
+            });
+        }
+        return Promise.resolve(albumKey + mediaDataContainer.titleName);
     };
     CommonDocMusicFileImportManager.prototype.extractAndSetCoverFile = function (mdoc, metaData) {
         var mdocAudios = this.getAudiosFromRecord(mdoc);
         if (mdocAudios === undefined || mdocAudios.length <= 0) {
             return Promise.resolve(false);
         }
+        var mdocAudio = mdocAudios[0];
         var mdocImages = this.getImagesFromRecord(mdoc);
-        if ((mdocImages !== undefined && mdocImages.length > 0)
-            || metaData.common.picture === undefined || metaData.common.picture.length < 1) {
+        if (mdocImages !== undefined && mdocImages.length > 0) {
+            console.debug('SKIPPED - coverfile already set for audio', mdoc.id, mdocAudio.fileName, mdocImages[0].fileName);
             return Promise.resolve(false);
         }
-        var mdocAudio = mdocAudios[0];
+        if (metaData.common.picture === undefined || metaData.common.picture.length < 1) {
+            console.debug('SKIPPED - no coverfile in metadata of audio', mdoc.id, mdocAudio.fileName);
+            return Promise.resolve(false);
+        }
         var destDir = pathLib.dirname(this.baseDir + '/' + mdocAudio.fileName);
         var coverFile = destDir + '/cover.jpg';
         var err = file_utils_1.FileUtils.checkFilePath(coverFile, false, false, false);
         if (err) {
             return Promise.reject('coverFile is invalid: ' + err);
         }
-        if (fs.existsSync(coverFile)) {
-            return Promise.resolve(false);
-        }
-        var mimes = this.getMimeTypeToFileExtension();
         var coverContainer = {};
-        for (var _i = 0, _a = metaData.common.picture; _i < _a.length; _i++) {
-            var picture = _a[_i];
-            var ext = mimes[picture.format] || '.unknown';
-            var fileName = destDir + '/' +
-                ('extract-albumcover-' +
-                    name_utils_1.NameUtils.normalizeFileNames(mdoc.album) +
-                    '-' +
-                    name_utils_1.NameUtils.normalizeFileNames(picture.type) +
-                    ext).replace(/ /g, '_');
-            this.checkAndUpdateAlbumCover(coverContainer, fileName);
-            if (!fs.existsSync(fileName)) {
-                fs.writeFileSync(fileName, metaData.common.picture[0].data);
+        if (fs.existsSync(coverFile)) {
+            this.checkAndUpdateAlbumCover(coverContainer, coverFile);
+        }
+        else {
+            var mimes = this.getMimeTypeToFileExtension();
+            for (var _i = 0, _a = metaData.common.picture; _i < _a.length; _i++) {
+                var picture = _a[_i];
+                var ext = mimes[picture.format] || '.unknown';
+                var fileName = destDir + '/' +
+                    ('extract-albumcover-' +
+                        name_utils_1.NameUtils.normalizeFileNames(mdoc.album) +
+                        '-' +
+                        name_utils_1.NameUtils.normalizeFileNames(picture.type) +
+                        ext).replace(/ /g, '_');
+                this.checkAndUpdateAlbumCover(coverContainer, fileName);
+                if (!fs.existsSync(fileName)) {
+                    console.log('created coverfile', mdoc.id, mdoc.album, mdoc.name, fileName);
+                    fs.writeFileSync(fileName, metaData.common.picture[0].data);
+                }
             }
         }
-        if (!coverContainer[destDir]) {
+        coverFile = coverContainer[destDir];
+        if (!coverFile) {
+            console.debug('SKIPPED - no coverfile for audio', mdoc.id, mdocAudio.fileName);
             return Promise.resolve(false);
         }
-        this.appendCoverImageToRecord(mdoc, coverContainer[destDir]);
-        console.log('created coverfile', mdoc.id, mdoc.album, mdoc.name, coverContainer[destDir]);
+        this.appendCoverImageToRecord(mdoc, coverFile);
+        console.log('append coverfile', mdoc.id, mdocAudio.fileName, mdoc.album, mdoc.name, coverFile);
         return Promise.resolve(true);
     };
     CommonDocMusicFileImportManager.prototype.checkAndUpdateAlbumCover = function (container, path) {
@@ -454,6 +474,92 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
             'image/png': '.png',
             'image/gif': '.gif'
         };
+    };
+    CommonDocMusicFileImportManager.prototype.mapAudioDataToMediaMetaDoc = function (reference, fullFilePath, mediaMeta, audioMetaData, fileStats) {
+        var updateFlag = false;
+        if (audioMetaData) {
+            var newRecordingDate = this.extractAudioRecordingDate(audioMetaData);
+            if (date_utils_1.DateUtils.dateToLocalISOString(mediaMeta.recordingDate) !== date_utils_1.DateUtils.dateToLocalISOString(newRecordingDate)) {
+                console.debug('mapAudioDataToMediaMetaDoc: recordingDate changed for id old/new', reference, mediaMeta.recordingDate, newRecordingDate);
+                updateFlag = true;
+                mediaMeta.recordingDate = date_utils_1.DateUtils.dateToLocalISOString(newRecordingDate);
+            }
+            var newDuration = this.extractAudioDuration(audioMetaData);
+            if (mediaMeta.dur !== newDuration) {
+                console.debug('mapAudioDataToMediaMetaDoc: duration changed for id old/new', reference, mediaMeta.dur, newDuration);
+                updateFlag = true;
+                mediaMeta.dur = newDuration;
+            }
+        }
+        else {
+            mediaMeta.dur = undefined;
+            mediaMeta.resolution = undefined;
+            mediaMeta.recordingDate = undefined;
+            console.debug('mapAudioDataToMediaMetaDoc: metadata empty so reset duration/resolution/recordingDate for id old/new', reference);
+        }
+        var metadata = this.prepareAudioMetadata(audioMetaData);
+        updateFlag = this.mapMetaDataToCommonMediaDoc(fullFilePath, mediaMeta, metadata, reference, fileStats) || updateFlag;
+        return updateFlag;
+    };
+    CommonDocMusicFileImportManager.prototype.mapMetaDataToCommonMediaDoc = function (mediaFilePath, mediaMeta, metadata, reference, fileStats) {
+        var updateFlag = false;
+        var newMetadata = this.jsonValidationRule.sanitize(JSON.stringify({ metadata: metadata }, function (key, value) {
+            if (value !== null) {
+                return value;
+            }
+        })
+            .replace('\\n', ' ').replace('\\r', ''));
+        var newFilesize = fileStats
+            ? fileStats.size
+            : undefined;
+        var newFilecreated = fileStats
+            ? fileStats.mtime
+            : undefined;
+        if (mediaMeta.metadata !== newMetadata) {
+            console.debug('mapMetaDataToCommonMediaDoc: metadata changed for id old/new', reference, '\n   OLD:\n', mediaMeta.metadata, '\n   NEW:\n', newMetadata);
+            updateFlag = true;
+            mediaMeta.metadata = newMetadata;
+        }
+        if (mediaMeta.fileSize !== newFilesize) {
+            console.debug('mapMetaDataToCommonMediaDoc: fileSize changed for id old/new', reference, mediaMeta.fileSize, newFilesize);
+            updateFlag = true;
+            mediaMeta.fileSize = newFilesize;
+        }
+        if (date_utils_1.DateUtils.dateToLocalISOString(mediaMeta.fileCreated) !== date_utils_1.DateUtils.dateToLocalISOString(newFilecreated)) {
+            console.debug('mapMetaDataToCommonMediaDoc: fileCreated changed for id old/new', reference, mediaMeta.fileCreated, newFilecreated, date_utils_1.DateUtils.dateToLocalISOString(mediaMeta.fileCreated), date_utils_1.DateUtils.dateToLocalISOString(newFilecreated));
+            updateFlag = true;
+            mediaMeta.fileCreated = date_utils_1.DateUtils.dateToLocalISOString(newFilecreated);
+        }
+        return updateFlag;
+    };
+    CommonDocMusicFileImportManager.prototype.prepareAudioMetadata = function (audioMetaData) {
+        if (!audioMetaData) {
+            return undefined;
+        }
+        var newMetadata = {
+            common: audioMetaData.common,
+            format: audioMetaData.format,
+            quality: audioMetaData.quality,
+            native: undefined
+        };
+        if (bean_utils_1.BeanUtils.getValue(newMetadata, 'common.picture')) {
+            newMetadata['common']['picture'] = undefined;
+        }
+        return newMetadata;
+    };
+    CommonDocMusicFileImportManager.prototype.extractAudioDuration = function (audioMetaData) {
+        return audioMetaData.format && audioMetaData.format.duration
+            ? Math.ceil(audioMetaData.format.duration)
+            : undefined;
+    };
+    CommonDocMusicFileImportManager.prototype.extractAudioRecordingDate = function (audioMetaData) {
+        if (!bean_utils_1.BeanUtils.getValue(audioMetaData, 'common.year')) {
+            return undefined;
+        }
+        var localDate = new Date();
+        localDate.setHours(12, 0, 0, 0);
+        localDate.setFullYear(Number(bean_utils_1.BeanUtils.getValue(audioMetaData, 'common.year')), 5, 30);
+        return localDate;
     };
     return CommonDocMusicFileImportManager;
 }());

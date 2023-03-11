@@ -3,19 +3,19 @@
 # Versions
 
 ## 5.7.0
-- improved reading of image-metadata
+- improved reading of image-metadata, audio-metadata
 
 ### new features
 - none
 
 ### improvements
-- backend: improved reading of image-metadata
+- backend: improved reading of image-metadata, audio-metadata
 
 ### bug fixes
 - none
 
 ### breaking changes
-- none
+- backend: CommonDocMusicFileImportManager must implement createMediaMetaRecord
 
 
 ## 5.6.0 (2023-01-19)

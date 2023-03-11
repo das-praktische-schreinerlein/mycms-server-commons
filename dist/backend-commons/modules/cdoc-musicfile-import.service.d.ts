@@ -7,6 +7,8 @@ import { BaseAudioRecord } from '@dps/mycms-commons/dist/search-commons/model/re
 import { BaseImageRecord } from '@dps/mycms-commons/dist/search-commons/model/records/baseimage-record';
 import { MediaManagerModule } from '../../media-commons/modules/media-manager.module';
 import { BaseMusicMediaDocRecordReferencesType, BaseMusicMediaDocRecordType } from '@dps/mycms-commons/dist/search-commons/model/records/basemusic-record';
+import { BaseMediaMetaRecordType } from '@dps/mycms-commons/dist/search-commons/model/records/basemediameta-record';
+import { DescValidationRule } from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
 export interface MediaImportRecordContainerType {
     [key: string]: BaseMusicMediaDocRecordType & BaseMusicMediaDocRecordReferencesType & CommonDocRecord;
 }
@@ -46,12 +48,15 @@ export declare abstract class CommonDocMusicFileImportManager<R extends BaseMusi
     unknownArtist: string;
     unknownAlbum: string;
     protected readonly baseDir: string;
+    protected readonly jsonValidationRule: DescValidationRule;
     protected constructor(baseDir: string, mediaManager: MediaManagerModule);
-    generateMusicDocRecordsFromMediaDir(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, baseDir: string, mappings: {}): Promise<R[]>;
-    generateMusicDocsForImportContainer(container: MediaImportContainerType, mediaTypes: {}, baseDir: string, mappings: {}, mapper: Mapper, responseMapper: GenericAdapterResponseMapper): Promise<R[]>;
+    generateMusicDocRecordsFromMediaDir(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, baseDir: string, mappings: {}, extractCoverFile?: boolean): Promise<R[]>;
+    generateMusicDocsForImportContainer(container: MediaImportContainerType, mediaTypes: {}, baseDir: string, mappings: {}, mapper: Mapper, responseMapper: GenericAdapterResponseMapper, extractCoverFile?: boolean): Promise<R[]>;
     checkMusicFile(path: string, records: R[], container: MediaImportContainerType, fileStats: fs.Stats): Promise<MediaImportFileCheckType>;
     checkMusicMediaData(path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, metadata: IAudioMetadata): Promise<MediaImportFileCheckType>;
-    createRecordsForMusicMediaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, metadata: IAudioMetadata): Promise<{}>;
+    createRecordsForMusicMediaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, audioMetaData: IAudioMetadata, extractCoverFile?: boolean): Promise<string>;
+    readMetadataFromAudioRecord(fileName: string): Promise<IAudioMetadata>;
+    createRecordsForMusicMediaMetaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, audioMetaData: IAudioMetadata, mediaMeta: BaseMediaMetaRecordType, extractCoverFile?: boolean): Promise<string>;
     extractAndSetCoverFile(mdoc: R, metaData: IAudioMetadata): Promise<boolean>;
     checkAndUpdateAlbumCover(container: {}, path: string): void;
     mapAudioMetaDataToMusicMediaData(mappings: {}, path: string, metaData: IAudioMetadata, mediaDataContainer: MusicMediaDataContainerType): void;
@@ -60,8 +65,14 @@ export declare abstract class CommonDocMusicFileImportManager<R extends BaseMusi
     mapMediaDataRecordToAudioMetaDataToMediaDocRecord(mappings: {}, mediaDataContainer: MusicMediaDataContainerType, mdoc: R): void;
     getFileExtensionToTypeMappings(): {};
     getMimeTypeToFileExtension(): {};
+    mapAudioDataToMediaMetaDoc(reference: string, fullFilePath: string, mediaMeta: BaseMediaMetaRecordType, audioMetaData: IAudioMetadata, fileStats: fs.Stats): boolean;
+    mapMetaDataToCommonMediaDoc(mediaFilePath: string, mediaMeta: BaseMediaMetaRecordType, metadata: any, reference: string, fileStats: fs.Stats): boolean;
+    prepareAudioMetadata(audioMetaData: IAudioMetadata): IAudioMetadata;
+    extractAudioDuration(audioMetaData: IAudioMetadata): number;
+    extractAudioRecordingDate(audioMetaData: IAudioMetadata): Date;
     protected abstract appendCoverImageToRecord(mdoc: R, coverFile: string): any;
     protected abstract appendLinkedArtistToAlbumRecord(mapper: Mapper, mdoc: R, artistId: number, artistName: string): any;
     protected abstract getAudiosFromRecord(mdoc: R): BaseAudioRecord[];
     protected abstract getImagesFromRecord(mdoc: R): BaseImageRecord[];
+    protected abstract createMediaMetaRecord(values: {}): BaseMediaMetaRecordType;
 }
