@@ -56,8 +56,8 @@ export declare abstract class CommonDocMusicFileImportManager<R extends BaseMusi
     checkMusicMediaData(path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, metadata: IAudioMetadata): Promise<MediaImportFileCheckType>;
     createRecordsForMusicMediaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, audioMetaData: IAudioMetadata, extractCoverFile?: boolean): Promise<string>;
     readMetadataFromAudioRecord(fileName: string): Promise<IAudioMetadata>;
-    createRecordsForMusicMediaMetaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, audioMetaData: IAudioMetadata, fileStats: any, extractCoverFile?: boolean): Promise<string>;
-    extractCoverFile(audioFileName: string, album: string, metaData: IAudioMetadata, coverContainer: {}): {};
+    createRecordsForMusicMediaMetaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, audioMetaData: IAudioMetadata, fileStats: any): Promise<string>;
+    extractCoverFile(audioFileName: string, album: string, metaData: IAudioMetadata, coverContainer: {}): Promise<boolean>;
     extractAndSetCoverFile(mdoc: R, metaData: IAudioMetadata): Promise<boolean>;
     checkAndUpdateAlbumCover(container: {}, path: string): void;
     mapAudioMetaDataToMusicMediaData(mappings: {}, path: string, metaData: IAudioMetadata, mediaDataContainer: MusicMediaDataContainerType): void;
