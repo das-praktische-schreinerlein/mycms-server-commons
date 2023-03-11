@@ -244,12 +244,8 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                                           container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType,
                                           fileStats: fs.Stats, audioMetaData: IAudioMetadata,
                                           extractCoverFile?: boolean): Promise<string> {
-        const mediaMeta = this.createMediaMetaRecord({fileName: path});
-        const absolutePath = this.baseDir + '/' + path;
-        this.mapAudioDataToMediaMetaDoc('new', absolutePath, mediaMeta, audioMetaData, fileStats);
-
         return this.createRecordsForMusicMediaMetaData(mapper, responseMapper, path, records, container,
-            mediaDataContainer, audioMetaData, mediaMeta, extractCoverFile);
+            mediaDataContainer, audioMetaData, fileStats, extractCoverFile);
     }
 
 
@@ -260,8 +256,9 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
     public createRecordsForMusicMediaMetaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper,
                                               path: string, records: R[],
                                               container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType,
-                                              audioMetaData: IAudioMetadata, mediaMeta: BaseMediaMetaRecordType, extractCoverFile?: boolean): Promise<string> {
+                                              audioMetaData: IAudioMetadata, fileStats, extractCoverFile?: boolean): Promise<string> {
         const values = {};
+
 
         // map genre
         const normalizedGenreName = NameUtils.normalizeNames(mediaDataContainer.genreName, this.unknownGenre);
@@ -404,6 +401,8 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
             'Artist_' + NameUtils.normalizeKwNames(normalizedAlbumArtistName),
             'KW_TODOKEYWORDS'].join(', ');
 
+        const mediaMeta = this.createMediaMetaRecord({fileName: path});
+        this.mapAudioDataToMediaMetaDoc('new', mediaMeta, audioMetaData, fileStats);
         values['mediameta_duration_i'] = BeanUtils.getValue(mediaMeta, 'dur');
         values['mediameta_filecreated_dt'] = BeanUtils.getValue(mediaMeta, 'fileCreated');
         values['mediameta_filename_s'] = BeanUtils.getValue(mediaMeta, 'fileName');
@@ -619,7 +618,7 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         };
     }
 
-    public mapAudioDataToMediaMetaDoc(reference: string, fullFilePath: string, mediaMeta: BaseMediaMetaRecordType,
+    public mapAudioDataToMediaMetaDoc(reference: string, mediaMeta: BaseMediaMetaRecordType,
                                       audioMetaData: IAudioMetadata, fileStats: fs.Stats): boolean {
         let updateFlag = false;
 
@@ -649,12 +648,12 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         }
 
         const metadata = this.prepareAudioMetadata(audioMetaData)
-        updateFlag = this.mapMetaDataToCommonMediaDoc(fullFilePath, mediaMeta, metadata, reference, fileStats) || updateFlag;
+        updateFlag = this.mapMetaDataToCommonMediaDoc(mediaMeta, metadata, reference, fileStats) || updateFlag;
 
         return updateFlag;
     }
 
-    public mapMetaDataToCommonMediaDoc(mediaFilePath: string, mediaMeta: BaseMediaMetaRecordType, metadata: any,
+    public mapMetaDataToCommonMediaDoc(mediaMeta: BaseMediaMetaRecordType, metadata: any,
                                        reference: string, fileStats: fs.Stats) {
         let updateFlag = false;
         const newMetadata = this.jsonValidationRule.sanitize(

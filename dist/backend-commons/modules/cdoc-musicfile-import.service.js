@@ -162,15 +162,12 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
         });
     };
     CommonDocMusicFileImportManager.prototype.createRecordsForMusicMediaData = function (mapper, responseMapper, path, records, container, mediaDataContainer, fileStats, audioMetaData, extractCoverFile) {
-        var mediaMeta = this.createMediaMetaRecord({ fileName: path });
-        var absolutePath = this.baseDir + '/' + path;
-        this.mapAudioDataToMediaMetaDoc('new', absolutePath, mediaMeta, audioMetaData, fileStats);
-        return this.createRecordsForMusicMediaMetaData(mapper, responseMapper, path, records, container, mediaDataContainer, audioMetaData, mediaMeta, extractCoverFile);
+        return this.createRecordsForMusicMediaMetaData(mapper, responseMapper, path, records, container, mediaDataContainer, audioMetaData, fileStats, extractCoverFile);
     };
     CommonDocMusicFileImportManager.prototype.readMetadataFromAudioRecord = function (fileName) {
         return this.mediaManager.readMusicTagsForMusicFile(fileName);
     };
-    CommonDocMusicFileImportManager.prototype.createRecordsForMusicMediaMetaData = function (mapper, responseMapper, path, records, container, mediaDataContainer, audioMetaData, mediaMeta, extractCoverFile) {
+    CommonDocMusicFileImportManager.prototype.createRecordsForMusicMediaMetaData = function (mapper, responseMapper, path, records, container, mediaDataContainer, audioMetaData, fileStats, extractCoverFile) {
         var values = {};
         // map genre
         var normalizedGenreName = name_utils_1.NameUtils.normalizeNames(mediaDataContainer.genreName, this.unknownGenre);
@@ -305,6 +302,8 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
         values['keywords_txt'] = ['Genre_' + name_utils_1.NameUtils.normalizeKwNames(normalizedGenreName),
             'Artist_' + name_utils_1.NameUtils.normalizeKwNames(normalizedAlbumArtistName),
             'KW_TODOKEYWORDS'].join(', ');
+        var mediaMeta = this.createMediaMetaRecord({ fileName: path });
+        this.mapAudioDataToMediaMetaDoc('new', mediaMeta, audioMetaData, fileStats);
         values['mediameta_duration_i'] = bean_utils_1.BeanUtils.getValue(mediaMeta, 'dur');
         values['mediameta_filecreated_dt'] = bean_utils_1.BeanUtils.getValue(mediaMeta, 'fileCreated');
         values['mediameta_filename_s'] = bean_utils_1.BeanUtils.getValue(mediaMeta, 'fileName');
@@ -487,7 +486,7 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
             'image/gif': '.gif'
         };
     };
-    CommonDocMusicFileImportManager.prototype.mapAudioDataToMediaMetaDoc = function (reference, fullFilePath, mediaMeta, audioMetaData, fileStats) {
+    CommonDocMusicFileImportManager.prototype.mapAudioDataToMediaMetaDoc = function (reference, mediaMeta, audioMetaData, fileStats) {
         var updateFlag = false;
         if (audioMetaData) {
             var newRecordingDate = this.extractAudioRecordingDate(audioMetaData);
@@ -510,10 +509,10 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
             console.debug('mapAudioDataToMediaMetaDoc: metadata empty so reset duration/resolution/recordingDate for id old/new', reference);
         }
         var metadata = this.prepareAudioMetadata(audioMetaData);
-        updateFlag = this.mapMetaDataToCommonMediaDoc(fullFilePath, mediaMeta, metadata, reference, fileStats) || updateFlag;
+        updateFlag = this.mapMetaDataToCommonMediaDoc(mediaMeta, metadata, reference, fileStats) || updateFlag;
         return updateFlag;
     };
-    CommonDocMusicFileImportManager.prototype.mapMetaDataToCommonMediaDoc = function (mediaFilePath, mediaMeta, metadata, reference, fileStats) {
+    CommonDocMusicFileImportManager.prototype.mapMetaDataToCommonMediaDoc = function (mediaMeta, metadata, reference, fileStats) {
         var updateFlag = false;
         var newMetadata = this.jsonValidationRule.sanitize(JSON.stringify({ metadata: metadata }, function (key, value) {
             if (value !== null) {

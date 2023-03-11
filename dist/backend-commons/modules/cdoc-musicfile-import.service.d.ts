@@ -56,7 +56,7 @@ export declare abstract class CommonDocMusicFileImportManager<R extends BaseMusi
     checkMusicMediaData(path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, metadata: IAudioMetadata): Promise<MediaImportFileCheckType>;
     createRecordsForMusicMediaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, fileStats: fs.Stats, audioMetaData: IAudioMetadata, extractCoverFile?: boolean): Promise<string>;
     readMetadataFromAudioRecord(fileName: string): Promise<IAudioMetadata>;
-    createRecordsForMusicMediaMetaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, audioMetaData: IAudioMetadata, mediaMeta: BaseMediaMetaRecordType, extractCoverFile?: boolean): Promise<string>;
+    createRecordsForMusicMediaMetaData(mapper: Mapper, responseMapper: GenericAdapterResponseMapper, path: string, records: R[], container: MediaImportContainerType, mediaDataContainer: MusicMediaDataContainerType, audioMetaData: IAudioMetadata, fileStats: any, extractCoverFile?: boolean): Promise<string>;
     extractCoverFile(audioFileName: string, album: string, metaData: IAudioMetadata, coverContainer: {}): {};
     extractAndSetCoverFile(mdoc: R, metaData: IAudioMetadata): Promise<boolean>;
     checkAndUpdateAlbumCover(container: {}, path: string): void;
@@ -66,8 +66,8 @@ export declare abstract class CommonDocMusicFileImportManager<R extends BaseMusi
     mapMediaDataRecordToAudioMetaDataToMediaDocRecord(mappings: {}, mediaDataContainer: MusicMediaDataContainerType, mdoc: R): void;
     getFileExtensionToTypeMappings(): {};
     getMimeTypeToFileExtension(): {};
-    mapAudioDataToMediaMetaDoc(reference: string, fullFilePath: string, mediaMeta: BaseMediaMetaRecordType, audioMetaData: IAudioMetadata, fileStats: fs.Stats): boolean;
-    mapMetaDataToCommonMediaDoc(mediaFilePath: string, mediaMeta: BaseMediaMetaRecordType, metadata: any, reference: string, fileStats: fs.Stats): boolean;
+    mapAudioDataToMediaMetaDoc(reference: string, mediaMeta: BaseMediaMetaRecordType, audioMetaData: IAudioMetadata, fileStats: fs.Stats): boolean;
+    mapMetaDataToCommonMediaDoc(mediaMeta: BaseMediaMetaRecordType, metadata: any, reference: string, fileStats: fs.Stats): boolean;
     prepareAudioMetadata(audioMetaData: IAudioMetadata): IAudioMetadata;
     extractAudioDuration(audioMetaData: IAudioMetadata): number;
     extractAudioRecordingDate(audioMetaData: IAudioMetadata): Date;
