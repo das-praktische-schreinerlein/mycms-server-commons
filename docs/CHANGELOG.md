@@ -2,7 +2,7 @@
  
 # Versions
 
-## 5.7.0
+## 5.7.0 (2023-03-18)
 - improved reading of image-metadata, audio-metadata
 
 ### new features
