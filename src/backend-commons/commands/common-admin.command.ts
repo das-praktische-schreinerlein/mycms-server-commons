@@ -1,31 +1,13 @@
 import {AbstractCommand} from './abstract.command';
 import {
     KeywordValidationRule,
-    RegExValidationReplaceRule,
     ValidationRule
 } from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
-import * as XRegExp from 'xregexp';
 import {
     CommonAdminCommandResultState,
     CommonAdminCommandStateType
 } from '@dps/mycms-commons/dist/commons/model/admin-response';
 import {CommonCommandStateService} from './common-command-state.service';
-
-export class SimpleConfigFilePathValidationRule extends RegExValidationReplaceRule {
-    constructor(required: boolean) {
-        super(required,
-            new XRegExp('^[-_.a-zA-Z0-9:\/\\\\]*$', 'gi'),
-            new XRegExp('[-_.a-zA-Z0-9:\/\\\\]*', 'gi'), '', 4096);
-    }
-}
-
-export class SimpleFilePathValidationRule extends RegExValidationReplaceRule {
-    constructor(required: boolean) {
-        super(required,
-            new XRegExp('^[-_.a-zA-Z0-9\:\/\\\\ \\p{LC}]*$', 'gi'),
-            new XRegExp('[-_.a-zA-Z0-9\:\/\\\\ \\p{LC}]*', 'gi'), '', 4096);
-    }
-}
 
 export abstract class CommonAdminCommand implements AbstractCommand {
     protected parameterValidations: {[key: string]: ValidationRule};

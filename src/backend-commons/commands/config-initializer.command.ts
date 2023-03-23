@@ -1,8 +1,12 @@
-import {PasswordValidationRule, ValidationRule} from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
+import {
+    PasswordValidationRule,
+    SimpleConfigFilePathValidationRule,
+    ValidationRule
+} from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
 import {PasswordUtils} from '@dps/mycms-commons/dist/commons/utils/password.utils';
 import {ConfigInitializerUtil} from '@dps/mycms-commons/dist/tools/config-initializer.util';
 import * as Promise_serial from 'promise-serial';
-import {CommonAdminCommand, SimpleConfigFilePathValidationRule} from './common-admin.command';
+import {CommonAdminCommand} from './common-admin.command';
 
 export class ConfigInitializerCommand extends CommonAdminCommand {
     protected configbasepath: string;

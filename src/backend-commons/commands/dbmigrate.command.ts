@@ -1,10 +1,8 @@
-import {
-    CommonAdminCommand,
-    SimpleConfigFilePathValidationRule,
-    SimpleFilePathValidationRule
-} from './common-admin.command';
+import {CommonAdminCommand} from './common-admin.command';
 import {
     NameValidationRule,
+    SimpleConfigFilePathValidationRule,
+    SimpleFilePathValidationRule,
     ValidationRule
 } from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
 

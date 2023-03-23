@@ -34,8 +34,8 @@ var DbMigrateCommand = /** @class */ (function (_super) {
     }
     DbMigrateCommand.prototype.createValidationRules = function () {
         return {
-            migrationDbConfigFile: new common_admin_command_1.SimpleConfigFilePathValidationRule(true),
-            migrationsDir: new common_admin_command_1.SimpleFilePathValidationRule(true),
+            migrationDbConfigFile: new generic_validator_util_1.SimpleConfigFilePathValidationRule(true),
+            migrationsDir: new generic_validator_util_1.SimpleFilePathValidationRule(true),
             migrationEnv: new generic_validator_util_1.NameValidationRule(true)
         };
     };

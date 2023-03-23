@@ -27,7 +27,7 @@ var ConfigInitializerCommand = /** @class */ (function (_super) {
         return {
             'newpassword': new generic_validator_util_1.PasswordValidationRule(false),
             'tokenkey': new generic_validator_util_1.PasswordValidationRule(false),
-            'configbasepath': new common_admin_command_1.SimpleConfigFilePathValidationRule(false)
+            'configbasepath': new generic_validator_util_1.SimpleConfigFilePathValidationRule(false)
         };
     };
     ConfigInitializerCommand.prototype.definePossibleActions = function () {
