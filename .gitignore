@@ -51,7 +51,6 @@ Thumbs.db
 /src/backend/shared-node
 /src/out-tsc
 /cache/
-/package-lock.json
 /dist/CHANGELOG-news.md
 /dist/CHANGELOG-summary.md
 /dist/CHANGELOG-summary-short.md
