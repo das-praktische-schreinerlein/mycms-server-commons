@@ -59,7 +59,7 @@
     "sitemap": ">= 2.2.0",
     "sitemap-stream-parser": ">= 1.7.0",
     "validator": ">= 13.9.1",
-    "xregexp": ">= 4.3.0 < 4.4.0"
+    "xregexp": ">= 4.4.1"
   },
   "devDependencies": {
     "@types/fluent-ffmpeg": "2.1.21",
@@ -109,6 +109,6 @@
     "sitemap": "2.2.0",
     "sitemap-stream-parser": "1.7.0",
     "validator": "13.9.0",
-    "xregexp": "4.3.0"
+    "xregexp": "4.4.1"
   }
 }
