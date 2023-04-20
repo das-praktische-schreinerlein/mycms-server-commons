@@ -5,12 +5,14 @@
 ## 6.0.0
 - bumped up deps
 - moved ValidationRules to commons
+- introduced fully featured pdoc-modules derived from cdoc
+- improved BackendConfigTypes
 
 ### new features
-- none
+- introduced fully featured pdoc-modues derived from cdoc
 
 ### improvements
-- none
+- improved BackendConfigTypes
 
 ### bug fixes
 - none

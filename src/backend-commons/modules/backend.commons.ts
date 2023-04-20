@@ -22,11 +22,11 @@ export interface CommonSqlConnectionConfigType<FU extends FacetCacheUsageConfigu
 }
 
 export interface CommonBackendConfigType<K extends CommonKeywordMapperConfigType, C extends CacheConfig> {
-    filePathPDocJson: string,
-    filePathThemeFilterJson: string,
     apiAnonymizeMedia: boolean,
     playlistExportMaxM3uRecordAllowed: number,
     imageMagicAppPath: string,
+    nodejsBinaryPath: string,
+    inlineJsPath: string,
     mapperConfig: K,
     cacheConfig: C,
     port: number,
