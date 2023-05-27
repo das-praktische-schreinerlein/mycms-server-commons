@@ -1,6 +1,7 @@
 import { CommonSqlConnectionConfigType } from "../../backend-commons/modules/backend.commons";
 export interface CommonPDocBackendConfigType<S extends CommonSqlConnectionConfigType<any, any>> {
-    filePathPDocJson: string;
+    filePathPDocJson?: string;
+    filePathPagesJson?: string;
     filePathThemeFilterJson: string;
     startPDocApi: boolean;
     pdocDataStoreAdapter: string;

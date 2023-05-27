@@ -4,4 +4,6 @@ export declare class PagesDataserviceModule {
     private static dataServices;
     static getDataService(profile: string, backendConfig: CommonPDocBackendConfigType<any>, locale: string): StaticPagesDataService;
     private static createDataService;
+    private static createLegacyDataService;
+    private static remapRecord;
 }
