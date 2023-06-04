@@ -22,6 +22,7 @@ export interface CommonSqlConnectionConfigType<FU extends FacetCacheUsageConfigu
 }
 
 export interface CommonBackendConfigType<K extends CommonKeywordMapperConfigType, C extends CacheConfig> {
+    profile: string,
     apiAnonymizeMedia: boolean,
     playlistExportMaxM3uRecordAllowed: number,
     imageMagicAppPath: string,

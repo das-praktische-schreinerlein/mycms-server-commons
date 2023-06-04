@@ -4,7 +4,7 @@ var pdoc_record_1 = require("@dps/mycms-commons/dist/pdoc-commons/model/records/
 var PagesServerModule = /** @class */ (function () {
     function PagesServerModule() {
     }
-    PagesServerModule.configureRoutes = function (app, apiPrefix, dataService, locale) {
+    PagesServerModule.configureRoutes = function (app, apiPrefix, dataService, locale, profile) {
         var mapper = dataService.getMapper('pdoc');
         console.log('configure route pages:', apiPrefix + '/' + locale + '/pages');
         app.route(apiPrefix + '/' + locale + '/pages')
@@ -18,11 +18,22 @@ var PagesServerModule = /** @class */ (function () {
             try {
                 mapper.findAll(undefined, {}).then(function searchDone(currentRecords) {
                     var result = [];
-                    for (var i = 0; i < currentRecords.length; i++) {
-                        var record = pdoc_record_1.PDocRecord.cloneToSerializeToJsonObj(currentRecords[i], false);
-                        // TODO filter by locale
-                        // TODO filter by profile
+                    for (var _i = 0, currentRecords_1 = currentRecords; _i < currentRecords_1.length; _i++) {
+                        var pdoc = currentRecords_1[_i];
+                        if (pdoc.profiles.indexOf('profile_' + profile) < 0) {
+                            console.log('IGNORED pdoc because of missing profile key:' + pdoc.key
+                                + ' profile:' + profile
+                                + ' configured:' + pdoc.profiles);
+                            continue;
+                        }
+                        if (pdoc.langkeys.indexOf('lang_' + locale) < 0) {
+                            console.log('IGNORED pdoc because of missing langkey:' + pdoc.key
+                                + ' profile:' + locale
+                                + ' configured:' + pdoc.langkeys);
+                            continue;
+                        }
                         // TODO filter by permission if there is a user
+                        var record = pdoc_record_1.PDocRecord.cloneToSerializeToJsonObj(pdoc, false);
                         result.push(record);
                     }
                     res.json(result);

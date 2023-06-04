@@ -10,6 +10,7 @@ export interface CommonAdminBackendConfigType<A extends CommonServerAdminCommand
     tcpBacklog: number;
 }
 export interface CommonAdminServerConfigType<A extends CommonAdminBackendConfigType<C>, C extends CommonServerAdminCommandConfigType, F extends FirewallConfig> {
+    profile: string;
     apiAdminPrefix: string;
     adminBackendConfig: A;
     filePathErrorDocs: string;

@@ -3,7 +3,7 @@ import express from 'express';
 import {PDocRecord} from '@dps/mycms-commons/dist/pdoc-commons/model/records/pdoc-record';
 
 export class PagesServerModule {
-    public static configureRoutes(app: express.Application, apiPrefix: string, dataService: StaticPagesDataService, locale: string) {
+    public static configureRoutes(app: express.Application, apiPrefix: string, dataService: StaticPagesDataService, locale: string, profile: string) {
         const mapper = dataService.getMapper('pdoc');
 
         console.log('configure route pages:', apiPrefix + '/' + locale + '/pages');
@@ -19,12 +19,23 @@ export class PagesServerModule {
                     mapper.findAll(undefined, {}).then(
                         function searchDone(currentRecords: PDocRecord[]) {
                             const result = [];
-                            for (let i = 0; i < currentRecords.length; i++) {
-                                const record = PDocRecord.cloneToSerializeToJsonObj(currentRecords[i], false);
+                            for (const pdoc of currentRecords) {
+                                if (pdoc.profiles.indexOf('profile_' + profile) < 0) {
+                                    console.log('IGNORED pdoc because of missing profile key:' + pdoc.key
+                                        + ' profile:' + profile
+                                        + ' configured:' + pdoc.profiles);
+                                    continue;
+                                }
+                                if (pdoc.langkeys.indexOf('lang_' + locale) < 0) {
+                                    console.log('IGNORED pdoc because of missing langkey:' + pdoc.key
+                                        + ' profile:' + locale
+                                        + ' configured:' + pdoc.langkeys);
+                                    continue;
+                                }
 
-                                // TODO filter by locale
-                                // TODO filter by profile
                                 // TODO filter by permission if there is a user
+
+                                const record = PDocRecord.cloneToSerializeToJsonObj(pdoc, false);
 
                                 result.push(record);
                             }
