@@ -6,12 +6,17 @@ import {ProcessUtils} from '@dps/mycms-commons/dist/commons/utils/process.utils'
 
 export class ViewerManagerModule {
 
-    public inlineDataOnViewerFile(nodePath, inlineCommandPath: string, srcHtmlFile: string, destFile: string): Promise<any> {
+    public inlineDataOnViewerFile(nodePath, inlineCommandPath: string, srcHtmlFile: string, destFile: string,
+                                  inlineProfile?: string): Promise<any> {
         return ProcessUtils.executeCommandAsync(nodePath, ['--max-old-space-size=8192',
                 inlineCommandPath,
                 srcHtmlFile,
                 destFile,
-                'inlineexport'],
+                inlineProfile
+                    ? inlineProfile !== 'all'
+                        ? inlineProfile
+                        : ''
+                    : 'inlineexport'],
             function (buffer) {
                 if (!buffer) {
                     return;

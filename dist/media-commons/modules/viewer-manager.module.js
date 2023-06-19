@@ -8,12 +8,16 @@ var process_utils_1 = require("@dps/mycms-commons/dist/commons/utils/process.uti
 var ViewerManagerModule = /** @class */ (function () {
     function ViewerManagerModule() {
     }
-    ViewerManagerModule.prototype.inlineDataOnViewerFile = function (nodePath, inlineCommandPath, srcHtmlFile, destFile) {
+    ViewerManagerModule.prototype.inlineDataOnViewerFile = function (nodePath, inlineCommandPath, srcHtmlFile, destFile, inlineProfile) {
         return process_utils_1.ProcessUtils.executeCommandAsync(nodePath, ['--max-old-space-size=8192',
             inlineCommandPath,
             srcHtmlFile,
             destFile,
-            'inlineexport'], function (buffer) {
+            inlineProfile
+                ? inlineProfile !== 'all'
+                    ? inlineProfile
+                    : ''
+                : 'inlineexport'], function (buffer) {
             if (!buffer) {
                 return;
             }
