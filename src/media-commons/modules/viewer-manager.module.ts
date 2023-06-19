@@ -98,17 +98,21 @@ export class ViewerManagerModule {
             });
     }
 
-    public jsonToJsTargetContentConverter(result: string, jsonPFileName: string, jsonPName): string {
+    public fullJsonToJsTargetContentConverter(result: string, jsonPFileName: string, jsonPName): string {
         result = result.replace(/([`\\])/g, '\\$1');
 
         return `window.${jsonPName} = \`\n`
             + result
-            +  `\`\nvar script = document.createElement("script");
+            +  `\`;\nvar script = document.createElement("script");
 script.type='application/json';
-script.id = '` + path.basename(jsonPFileName) + `';
+script.id = '` + jsonPFileName + `';
 var text = document.createTextNode(${jsonPName});
 script.appendChild(text);
 document.head.appendChild(script);`;
+    };
+
+    public jsonToJsTargetContentConverter(result: string, jsonPFileName: string, jsonPName): string {
+        return this.fullJsonToJsTargetContentConverter(result, path.basename(jsonPFileName), jsonPName);
     };
 
     public htmlConfigConverter(html: string, dataFileConfigName: string): string {

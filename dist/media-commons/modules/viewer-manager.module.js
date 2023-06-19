@@ -87,11 +87,15 @@ var ViewerManagerModule = /** @class */ (function () {
             return Promise.reject(reason);
         });
     };
-    ViewerManagerModule.prototype.jsonToJsTargetContentConverter = function (result, jsonPFileName, jsonPName) {
+    ViewerManagerModule.prototype.fullJsonToJsTargetContentConverter = function (result, jsonPFileName, jsonPName) {
         result = result.replace(/([`\\])/g, '\\$1');
         return "window." + jsonPName + " = `\n"
             + result
-            + "`\nvar script = document.createElement(\"script\");\nscript.type='application/json';\nscript.id = '" + path.basename(jsonPFileName) + ("';\nvar text = document.createTextNode(" + jsonPName + ");\nscript.appendChild(text);\ndocument.head.appendChild(script);");
+            + "`;\nvar script = document.createElement(\"script\");\nscript.type='application/json';\nscript.id = '" + jsonPFileName + ("';\nvar text = document.createTextNode(" + jsonPName + ");\nscript.appendChild(text);\ndocument.head.appendChild(script);");
+    };
+    ;
+    ViewerManagerModule.prototype.jsonToJsTargetContentConverter = function (result, jsonPFileName, jsonPName) {
+        return this.fullJsonToJsTargetContentConverter(result, path.basename(jsonPFileName), jsonPName);
     };
     ;
     ViewerManagerModule.prototype.htmlConfigConverter = function (html, dataFileConfigName) {
