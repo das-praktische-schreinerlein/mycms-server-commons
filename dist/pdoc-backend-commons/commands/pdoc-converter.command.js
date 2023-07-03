@@ -18,7 +18,6 @@ var generic_validator_util_1 = require("@dps/mycms-commons/dist/search-commons/m
 var common_admin_command_1 = require("../../backend-commons/commands/common-admin.command");
 var date_utils_1 = require("@dps/mycms-commons/dist/commons/utils/date.utils");
 var file_utils_1 = require("@dps/mycms-commons/dist/commons/utils/file.utils");
-var pdoc_dataservice_module_1 = require("../modules/pdoc-dataservice.module");
 var pdoc_file_utils_1 = require("@dps/mycms-commons/dist/pdoc-commons/services/pdoc-file.utils");
 var string_utils_1 = require("@dps/mycms-commons/dist/commons/utils/string.utils");
 var pdoc_adapter_response_mapper_1 = require("@dps/mycms-commons/dist/pdoc-commons/services/pdoc-adapter-response.mapper");
@@ -48,8 +47,6 @@ var PDocConverterCommand = /** @class */ (function (_super) {
             return Promise.reject('ERROR - parameters required backendConfig: "--backend"');
         }
         var backendConfig = JSON.parse(fs.readFileSync(filePathConfigJson, { encoding: 'utf8' }));
-        var dataService = pdoc_dataservice_module_1.PDocDataServiceModule.getDataService('pdocSolrReadOnly', backendConfig);
-        dataService.setWritable(false);
         var viewerManagerModule = new viewer_manager_module_1.ViewerManagerModule();
         var responseMapper = new pdoc_adapter_response_mapper_1.PDocAdapterResponseMapper(backendConfig);
         var action = argv['action'];

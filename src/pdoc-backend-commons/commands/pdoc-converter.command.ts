@@ -9,7 +9,6 @@ import {
 import {CommonAdminCommand} from '../../backend-commons/commands/common-admin.command';
 import {DateUtils} from '@dps/mycms-commons/dist/commons/utils/date.utils';
 import {FileUtils} from '@dps/mycms-commons/dist/commons/utils/file.utils';
-import {PDocDataServiceModule} from '../modules/pdoc-dataservice.module';
 import {PDocFileUtils} from '@dps/mycms-commons/dist/pdoc-commons/services/pdoc-file.utils';
 import {PDocRecord} from '@dps/mycms-commons/dist/pdoc-commons/model/records/pdoc-record';
 import {StringUtils} from '@dps/mycms-commons/dist/commons/utils/string.utils';
@@ -43,9 +42,6 @@ export class PDocConverterCommand extends CommonAdminCommand {
         }
 
         const backendConfig = JSON.parse(fs.readFileSync(filePathConfigJson, {encoding: 'utf8'}));
-        const dataService = PDocDataServiceModule.getDataService('pdocSolrReadOnly', backendConfig);
-        dataService.setWritable(false);
-
         const viewerManagerModule = new ViewerManagerModule();
         const responseMapper: GenericAdapterResponseMapper = new PDocAdapterResponseMapper(backendConfig);
 
