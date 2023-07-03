@@ -7,9 +7,11 @@
 - moved ValidationRules to commons
 - introduced fully featured pdoc-modules derived from cdoc
 - improved BackendConfigTypes
+- backend: added page-management
 
 ### new features
-- introduced fully featured pdoc-modues derived from cdoc
+- introduced fully featured pdoc-modules derived from cdoc
+- backend: added page-management
 
 ### improvements
 - improved BackendConfigTypes
