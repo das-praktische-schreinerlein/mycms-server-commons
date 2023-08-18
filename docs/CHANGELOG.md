@@ -8,6 +8,7 @@
 - introduced fully featured pdoc-modules derived from cdoc
 - improved BackendConfigTypes
 - backend: added page-management
+- backend: use fully featured markdown-support with extensions
 
 ### new features
 - introduced fully featured pdoc-modules derived from cdoc
@@ -15,6 +16,7 @@
 
 ### improvements
 - improved BackendConfigTypes
+- backend: use fully featured markdown-support with extensions
 
 ### bug fixes
 - none

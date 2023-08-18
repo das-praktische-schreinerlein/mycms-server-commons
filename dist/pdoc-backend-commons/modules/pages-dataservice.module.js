@@ -6,31 +6,21 @@ var staticpages_data_service_1 = require("@dps/mycms-commons/dist/pdoc-commons/s
 var pdoc_inmemory_adapter_1 = require("@dps/mycms-commons/dist/pdoc-commons/services/pdoc-inmemory.adapter");
 var pdoc_file_utils_1 = require("@dps/mycms-commons/dist/pdoc-commons/services/pdoc-file.utils");
 var fs = require("fs");
-var marked = require("marked");
 var htmlToText = require("html-to-text");
 var pdoc_adapter_response_mapper_1 = require("@dps/mycms-commons/dist/pdoc-commons/services/pdoc-adapter-response.mapper");
 var PagesDataserviceModule = /** @class */ (function () {
     function PagesDataserviceModule() {
     }
-    PagesDataserviceModule.getDataService = function (profile, backendConfig, locale) {
-        marked.setOptions({
-            gfm: true,
-            tables: true,
-            breaks: true,
-            pedantic: false,
-            sanitize: true,
-            smartLists: true,
-            smartypants: true
-        });
+    PagesDataserviceModule.getDataService = function (profile, backendConfig, locale, markdownService) {
         if (!this.dataServices.has(profile)) {
-            this.dataServices.set(profile, PagesDataserviceModule.createDataService(backendConfig, locale));
+            this.dataServices.set(profile, PagesDataserviceModule.createDataService(backendConfig, locale, markdownService));
         }
         return this.dataServices.get(profile);
     };
-    PagesDataserviceModule.createDataService = function (backendConfig, locale) {
+    PagesDataserviceModule.createDataService = function (backendConfig, locale, markdownService) {
         if (!backendConfig.filePathPagesJson) {
             if (backendConfig.filePathPDocJson) {
-                return this.createLegacyDataService(backendConfig, locale);
+                return this.createLegacyDataService(backendConfig, locale, markdownService);
             }
             throw new Error('for PagesDataserviceModule no filePathPagesJson OR filePathPDocJson is configured');
         }
@@ -45,7 +35,7 @@ var PagesDataserviceModule = /** @class */ (function () {
         for (var _i = 0, recordSrcs_1 = recordSrcs; _i < recordSrcs_1.length; _i++) {
             var docSrc = recordSrcs_1[_i];
             var doc = responseMapper.mapResponseDocument(mapper, docSrc, {});
-            PagesDataserviceModule.remapRecord(doc);
+            PagesDataserviceModule.remapRecord(markdownService, doc);
             docs.push(doc);
         }
         dataService.setWritable(true);
@@ -61,7 +51,7 @@ var PagesDataserviceModule = /** @class */ (function () {
         dataStore.setAdapter('inmemory', adapter, '', {});
         return dataService;
     };
-    PagesDataserviceModule.createLegacyDataService = function (backendConfig, locale) {
+    PagesDataserviceModule.createLegacyDataService = function (backendConfig, locale, markdownService) {
         // configure store
         var dataStore = new staticpages_data_store_1.StaticPagesDataStore(new searchparameter_utils_1.SearchParameterUtils());
         var dataService = new staticpages_data_service_1.StaticPagesDataService(dataStore);
@@ -69,7 +59,7 @@ var PagesDataserviceModule = /** @class */ (function () {
         var docs = JSON.parse(fs.readFileSync(fileName, { encoding: 'utf8' })).pdocs;
         for (var _i = 0, docs_1 = docs; _i < docs_1.length; _i++) {
             var doc = docs_1[_i];
-            PagesDataserviceModule.remapRecord(doc);
+            PagesDataserviceModule.remapRecord(markdownService, doc);
         }
         dataService.setWritable(true);
         dataService.addMany(docs).then(function doneAddMany(records) {
@@ -84,9 +74,9 @@ var PagesDataserviceModule = /** @class */ (function () {
         dataStore.setAdapter('inmemory', adapter, '', {});
         return dataService;
     };
-    PagesDataserviceModule.remapRecord = function (doc) {
+    PagesDataserviceModule.remapRecord = function (markdownService, doc) {
         if (!doc['descHtml']) {
-            doc['descHtml'] = marked(doc['descMd']);
+            doc['descHtml'] = markdownService.renderMarkdown(doc['descMd']);
         }
         if (!doc['descTxt']) {
             doc['descTxt'] = htmlToText.fromString(doc['descHtml'], {

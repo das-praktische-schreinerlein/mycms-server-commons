@@ -5,7 +5,6 @@ import {PDocInMemoryAdapter} from '@dps/mycms-commons/dist/pdoc-commons/services
 import {PDocRecord} from '@dps/mycms-commons/dist/pdoc-commons/model/records/pdoc-record';
 import {PDocFileUtils} from '@dps/mycms-commons/dist/pdoc-commons/services/pdoc-file.utils';
 import * as fs from 'fs';
-import * as marked from 'marked';
 import * as htmlToText from 'html-to-text';
 import {CommonPDocBackendConfigType} from './pdoc-backend.commons';
 import {
@@ -14,33 +13,25 @@ import {
 import {PDocAdapterResponseMapper} from '@dps/mycms-commons/dist/pdoc-commons/services/pdoc-adapter-response.mapper';
 import {CommonDocRecord} from '@dps/mycms-commons/dist/search-commons/model/records/cdoc-entity-record';
 import {Mapper} from 'js-data';
+import {MarkdownService} from '@dps/mycms-commons/dist/markdown-commons/markdown.service';
 
 export class PagesDataserviceModule {
     private static dataServices = new Map<string, StaticPagesDataService>();
 
     public static getDataService(profile: string, backendConfig: CommonPDocBackendConfigType<any>,
-                                 locale: string): StaticPagesDataService {
-        marked.setOptions({
-            gfm: true,
-            tables: true,
-            breaks: true,
-            pedantic: false,
-            sanitize: true,
-            smartLists: true,
-            smartypants: true
-        });
-
+                                 locale: string, markdownService: MarkdownService): StaticPagesDataService {
         if (!this.dataServices.has(profile)) {
-            this.dataServices.set(profile, PagesDataserviceModule.createDataService(backendConfig, locale));
+            this.dataServices.set(profile, PagesDataserviceModule.createDataService(backendConfig, locale, markdownService));
         }
 
         return this.dataServices.get(profile);
     }
 
-    private static createDataService(backendConfig: CommonPDocBackendConfigType<any>, locale: string): StaticPagesDataService {
+    private static createDataService(backendConfig: CommonPDocBackendConfigType<any>, locale: string,
+                                     markdownService: MarkdownService): StaticPagesDataService {
         if (!backendConfig.filePathPagesJson) {
             if (backendConfig.filePathPDocJson) {
-                return this.createLegacyDataService(backendConfig, locale);
+                return this.createLegacyDataService(backendConfig, locale, markdownService);
             }
 
             throw new Error('for PagesDataserviceModule no filePathPagesJson OR filePathPDocJson is configured');
@@ -57,7 +48,7 @@ export class PagesDataserviceModule {
         const docs = [];
         for (const docSrc of recordSrcs) {
             const doc: CommonDocRecord = <CommonDocRecord>responseMapper.mapResponseDocument(mapper, docSrc, {});
-            PagesDataserviceModule.remapRecord(doc);
+            PagesDataserviceModule.remapRecord(markdownService, doc);
 
             docs.push(doc);
         }
@@ -80,7 +71,8 @@ export class PagesDataserviceModule {
         return dataService;
     }
 
-    private static createLegacyDataService(backendConfig: CommonPDocBackendConfigType<any>, locale: string): StaticPagesDataService {
+    private static createLegacyDataService(backendConfig: CommonPDocBackendConfigType<any>, locale: string,
+                                           markdownService: MarkdownService): StaticPagesDataService {
         // configure store
         const dataStore: StaticPagesDataStore = new StaticPagesDataStore(new SearchParameterUtils());
         const dataService: StaticPagesDataService = new StaticPagesDataService(dataStore);
@@ -88,7 +80,7 @@ export class PagesDataserviceModule {
         const fileName = backendConfig.filePathPDocJson.replace('.json', '-' + locale + '.json');
         const docs: any[] = JSON.parse(fs.readFileSync(fileName, { encoding: 'utf8' })).pdocs;
         for (const doc of docs) {
-            PagesDataserviceModule.remapRecord(doc);
+            PagesDataserviceModule.remapRecord(markdownService, doc);
         }
 
         dataService.setWritable(true);
@@ -109,9 +101,9 @@ export class PagesDataserviceModule {
         return dataService;
     }
 
-    private static remapRecord(doc: CommonDocRecord): void {
+    private static remapRecord(markdownService: MarkdownService, doc: CommonDocRecord): void {
         if (!doc['descHtml']) {
-            doc['descHtml'] = marked(doc['descMd']);
+            doc['descHtml'] = markdownService.renderMarkdown(doc['descMd']);
         }
         if (!doc['descTxt']) {
             doc['descTxt'] = htmlToText.fromString(doc['descHtml'], {
