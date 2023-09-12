@@ -9,19 +9,20 @@ var ViewerManagerModule = /** @class */ (function () {
     function ViewerManagerModule() {
     }
     ViewerManagerModule.prototype.inlineDataOnViewerFile = function (nodePath, inlineCommandPath, srcHtmlFile, destFile, inlineProfile) {
+        var profile = inlineProfile
+            ? inlineProfile !== 'all'
+                ? inlineProfile
+                : ''
+            : 'inlineexport';
         return process_utils_1.ProcessUtils.executeCommandAsync(nodePath, ['--max-old-space-size=8192',
             inlineCommandPath,
             srcHtmlFile,
             destFile,
-            inlineProfile
-                ? inlineProfile !== 'all'
-                    ? inlineProfile
-                    : ''
-                : 'inlineexport'], function (buffer) {
+            profile], function (buffer) {
             if (!buffer) {
                 return;
             }
-            console.log(buffer.toString());
+            console.log(buffer.toString(), inlineCommandPath, srcHtmlFile, destFile, profile);
         }, function (buffer) {
             if (!buffer) {
                 return;

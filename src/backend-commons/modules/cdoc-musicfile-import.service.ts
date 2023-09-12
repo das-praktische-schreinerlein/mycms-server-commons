@@ -675,7 +675,7 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                     return value
                 }
             })
-                .replace('\\n', ' ').replace('\\r', '')
+                .replace(/\\n/g, ' ').replace(/\\r/g, '')
         );
 
         const newFilesize = fileStats

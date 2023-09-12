@@ -8,20 +8,24 @@ export class ViewerManagerModule {
 
     public inlineDataOnViewerFile(nodePath, inlineCommandPath: string, srcHtmlFile: string, destFile: string,
                                   inlineProfile?: string): Promise<any> {
+        const profile = inlineProfile
+            ? inlineProfile !== 'all'
+                ? inlineProfile
+                : ''
+            : 'inlineexport';
         return ProcessUtils.executeCommandAsync(nodePath, ['--max-old-space-size=8192',
                 inlineCommandPath,
                 srcHtmlFile,
                 destFile,
-                inlineProfile
-                    ? inlineProfile !== 'all'
-                        ? inlineProfile
-                        : ''
-                    : 'inlineexport'],
+                profile],
             function (buffer) {
                 if (!buffer) {
                     return;
                 }
-                console.log(buffer.toString());
+                console.log(buffer.toString(), inlineCommandPath,
+                    srcHtmlFile,
+                    destFile,
+                    profile);
             },
             function (buffer) {
                 if (!buffer) {

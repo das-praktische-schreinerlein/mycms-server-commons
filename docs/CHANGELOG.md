@@ -19,7 +19,7 @@
 - backend: use fully featured markdown-support with extensions
 
 ### bug fixes
-- none
+- fixed string-replace
 
 ### breaking changes
 - bumped up deps

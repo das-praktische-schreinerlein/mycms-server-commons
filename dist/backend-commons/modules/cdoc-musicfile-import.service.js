@@ -534,7 +534,7 @@ var CommonDocMusicFileImportManager = /** @class */ (function () {
                 return value;
             }
         })
-            .replace('\\n', ' ').replace('\\r', ''));
+            .replace(/\\n/g, ' ').replace(/\\r/g, ''));
         var newFilesize = fileStats
             ? fileStats.size
             : undefined;
