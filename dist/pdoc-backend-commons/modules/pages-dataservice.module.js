@@ -83,10 +83,6 @@ var PagesDataserviceModule = /** @class */ (function () {
                 wordwrap: 80
             });
         }
-        // remap id by key
-        if (doc['key']) {
-            doc['id'] = doc['key'];
-        }
     };
     PagesDataserviceModule.dataServices = new Map();
     return PagesDataserviceModule;

@@ -110,10 +110,5 @@ export class PagesDataserviceModule {
                 wordwrap: 80
             });
         }
-
-        // remap id by key
-        if (doc['key']) {
-            doc['id'] = doc['key'];
-        }
     }
 }
