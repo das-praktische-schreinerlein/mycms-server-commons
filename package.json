@@ -75,7 +75,7 @@
     "typescript": "3.2.4",
     "@dps/mycms-commons": "git://github.com/das-praktische-schreinerlein/mycms-commons.git#5.7.0",
     "@risingstack/protect": "1.2.0",
-    "axios": "0.19.2",
+    "axios": "1.6.0",
     "body-parser": "1.19.0",
     "compression": "1.7.4",
     "cookie-parser": "1.4.5",
