@@ -285,7 +285,7 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                 type_s: 'GENRE',
                 id: 'GENRE_' + (records.length + 1),
                 genre_id_i: records.length + 1,
-                genre_txt: normalizedGenreName,
+                genre_s: normalizedGenreName,
                 name_s: normalizedGenreName,
                 keywords_txt: ['Genre_' + NameUtils.normalizeKwNames(normalizedGenreName), 'KW_TODOKEYWORDS'].join(', ')
             }, {});
@@ -297,8 +297,8 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                 id: 'ARTIST_' + (records.length + 1),
                 genre_id_i: genre.genreId,
                 artist_id_i: records.length + 1,
-                genre_txt: normalizedGenreName,
-                artist_txt: normalizedGenreArtistName,
+                genre_s: normalizedGenreName,
+                artist_s: normalizedGenreArtistName,
                 name_s: normalizedGenreArtistName,
                 keywords_txt: ['Genre_' + NameUtils.normalizeKwNames(normalizedGenreName),
                     'Artist_' + NameUtils.normalizeKwNames(normalizedGenreArtistName),
@@ -320,8 +320,8 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                 id: 'ARTIST_' + (records.length + 1),
                 genre_id_i: genre.genreId,
                 artist_id_i: records.length + 1,
-                genre_txt: normalizedGenreName,
-                artist_txt: normalizedArtistName,
+                genre_s: normalizedGenreName,
+                artist_s: normalizedArtistName,
                 name_s: normalizedArtistName,
                 keywords_txt: ['Genre_' + NameUtils.normalizeKwNames(normalizedGenreName),
                     'Artist_' + NameUtils.normalizeKwNames(normalizedArtistName),
@@ -349,8 +349,8 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                     id: 'ARTIST_' + (records.length + 1),
                     artist_id_i: records.length + 1,
                     genre_id_i: genre.genreId,
-                    genre_txt: normalizedGenreName,
-                    artist_txt: normalizedAlbumArtistName,
+                    genre_s: normalizedGenreName,
+                    artist_s: normalizedAlbumArtistName,
                     name_s: normalizedAlbumArtistName,
                     keywords_txt: ['Genre_' + NameUtils.normalizeKwNames(normalizedGenreName),
                         'Artist_' + NameUtils.normalizeKwNames(normalizedAlbumArtistName),
@@ -377,9 +377,9 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
                     album_id_i: records.length + 1,
                     artist_id_i: albumArtist.artistId,
                     genre_id_i: genre.genreId,
-                    genre_txt: normalizedGenreName,
-                    artist_txt: normalizedAlbumArtistName,
-                    album_txt: normalizedAlbumName,
+                    genre_s: normalizedGenreName,
+                    artist_s: normalizedAlbumArtistName,
+                    album_s: normalizedAlbumName,
                     name_s: normalizedAlbumName,
                     i_fav_url_txt: coverFile,
                     keywords_txt: ['Genre_' + NameUtils.normalizeKwNames(normalizedGenreName),
@@ -399,9 +399,9 @@ export abstract class CommonDocMusicFileImportManager<R extends BaseMusicMediaDo
         values['audio_id_i'] = records.length + 1;
         values['type_s'] = 'AUDIO';
         values['id'] = 'AUDIO_' + (records.length + 1);
-        values['genre_txt'] = normalizedGenreName;
-        values['artist_txt'] = normalizedAlbumArtistName;
-        values['album_txt'] = normalizedAlbumName;
+        values['genre_s'] = normalizedGenreName;
+        values['artist_s'] = normalizedAlbumArtistName;
+        values['album_s'] = normalizedAlbumName;
         values['name_s'] = mediaDataContainer.titleName;
         values['trackno_i'] = mediaDataContainer.trackNr;
 

@@ -9,6 +9,7 @@
 - improved BackendConfigTypes
 - backend: added page-management
 - backend: use fully featured markdown-support with extensions
+- backend: fixed naming of attributes/filter: type_s)
 
 ### new features
 - introduced fully featured pdoc-modules derived from cdoc
@@ -24,6 +25,7 @@
 ### breaking changes
 - bumped up deps
 - moved ValidationRules to commons
+- backend: fixed naming of attributes/filter: type_s)
 
 
 ## 5.7.0 (2023-03-18)
