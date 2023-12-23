@@ -98,7 +98,7 @@
     "jimp": "0.12.1",
     "js-data": "3.0.8",
     "js-data-http": "3.0.1",
-    "knex": "0.20.10",
+    "knex": "2.4.0",
     "marked": "4.3.0",
     "minimist": "1.2.8",
     "music-metadata": "6.4.0",
