@@ -2,6 +2,21 @@
  
 # Versions
 
+## 6.1.0
+
+### new features
+- none
+
+### improvements
+- none
+
+### bug fixes
+- none
+
+### breaking changes
+- none
+
+
 ## 6.0.0 (2023-12-22)
 - bumped up deps
 - moved ValidationRules to commons
