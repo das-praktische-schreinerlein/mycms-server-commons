@@ -123,11 +123,11 @@ export class PDocPdfManagerCommand extends CommonAdminCommand {
     }
 
     protected getGenerateTypeFromAction(action: string) {
-        return 'PAGE';
+        return 'page';
     }
 
     protected getExportTypeFromAction(action: string) {
-        return 'PAGE';
+        return 'page';
     }
 
 }

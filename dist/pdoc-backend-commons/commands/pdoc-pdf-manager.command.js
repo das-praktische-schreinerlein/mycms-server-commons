@@ -108,10 +108,10 @@ var PDocPdfManagerCommand = /** @class */ (function (_super) {
         return promise;
     };
     PDocPdfManagerCommand.prototype.getGenerateTypeFromAction = function (action) {
-        return 'PAGE';
+        return 'page';
     };
     PDocPdfManagerCommand.prototype.getExportTypeFromAction = function (action) {
-        return 'PAGE';
+        return 'page';
     };
     return PDocPdfManagerCommand;
 }(common_admin_command_1.CommonAdminCommand));
