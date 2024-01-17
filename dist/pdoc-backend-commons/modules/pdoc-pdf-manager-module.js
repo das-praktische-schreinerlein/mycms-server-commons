@@ -33,11 +33,11 @@ var PagePdfManagerModule = /** @class */ (function (_super) {
             return undefined;
         }
         var name = string_utils_1.StringUtils.generateTechnicalName(entity.name);
-        var baseName = [entity.type, entity.key, entity.id].join('_') + '.pdf';
+        var baseName = [entity.type, entity.sortkey, entity.key, entity.id].join('_') + '.pdf';
         if ([baseName, name].join('_').length > 140) {
             name = name.substring(0, 135 - baseName.length);
         }
-        return [entity.type, entity.key,
+        return [entity.type, entity.sortkey, entity.key,
             name,
             entity.id].join('_') + '.pdf';
     };

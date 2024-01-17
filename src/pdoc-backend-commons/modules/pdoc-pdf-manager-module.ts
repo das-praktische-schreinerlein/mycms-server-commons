@@ -31,12 +31,12 @@ export class PagePdfManagerModule extends CommonDocPdfManagerModule<PDocDataServ
 
         let name = StringUtils.generateTechnicalName(entity.name);
 
-        const baseName = [entity.type, entity.key, entity.id].join('_') + '.pdf';
+        const baseName = [entity.type, entity.sortkey, entity.key, entity.id].join('_') + '.pdf';
         if ([baseName, name].join('_').length > 140) {
             name = name.substring(0, 135 - baseName.length);
         }
 
-        return [entity.type, entity.key,
+        return [entity.type, entity.sortkey, entity.key,
             name,
             entity.id].join('_') + '.pdf';
     }
