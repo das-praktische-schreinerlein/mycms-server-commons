@@ -77,3 +77,12 @@ export interface CommonVideoBackendConfigType<K extends CommonKeywordMapperConfi
     playlistExportUseVideoAssetStoreUrls: boolean,
     proxyVideosRouteToUrl: string
 }
+
+export interface CommonPdfBackendConfigType {
+    apiRoutePdfs: string;
+    apiRoutePdfsStaticDir: string;
+    apiRoutePdfsStaticEnabled: boolean;
+    apiRouteStoredPdfs: string;
+    proxyPdfRouteToUrl: string;
+}
+

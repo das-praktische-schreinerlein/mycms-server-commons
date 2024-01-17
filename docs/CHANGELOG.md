@@ -3,9 +3,10 @@
 # Versions
 
 ## 6.1.0
+- backend: added pre-generated pdf-support for cdoc and pages
 
 ### new features
-- none
+- backend: added pre-generated pdf-support for cdoc and pages
 
 ### improvements
 - none
