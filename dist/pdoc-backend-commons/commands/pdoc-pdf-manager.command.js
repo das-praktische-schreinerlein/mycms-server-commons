@@ -31,6 +31,7 @@ var pdoc_file_utils_1 = require("@dps/mycms-commons/dist/pdoc-commons/services/p
 var pdoc_dataservice_module_1 = require("../modules/pdoc-dataservice.module");
 var pdoc_pdf_manager_module_1 = require("../modules/pdoc-pdf-manager-module");
 var pdoc_export_manager_utils_1 = require("../modules/pdoc-export-manager.utils");
+var pdf_manager_1 = require("../../media-commons/modules/pdf-manager");
 var PDocPdfManagerCommand = /** @class */ (function (_super) {
     __extends(PDocPdfManagerCommand, _super);
     function PDocPdfManagerCommand() {
@@ -66,7 +67,8 @@ var PDocPdfManagerCommand = /** @class */ (function (_super) {
         if (writable) {
             dataService.setWritable(true);
         }
-        var pdfManagerModule = new pdoc_pdf_manager_module_1.PagePdfManagerModule(dataService, backendConfig, sitemapConfig);
+        var pdfManager = new pdf_manager_1.PdfManager(backendConfig);
+        var pdfManagerModule = new pdoc_pdf_manager_module_1.PagePdfManagerModule(dataService, pdfManager, sitemapConfig);
         var promise;
         var processingOptions = {
             ignoreErrors: Number.parseInt(argv['ignoreErrors'], 10) || 0,

@@ -2,22 +2,26 @@ import {ProcessingOptions} from '@dps/mycms-commons/dist/search-commons/services
 import {SitemapConfig} from '../../backend-commons/modules/sitemap-generator.module';
 import {StringUtils} from '@dps/mycms-commons/dist/commons/utils/string.utils';
 import {CommonDocRecord} from '@dps/mycms-commons/dist/search-commons/model/records/cdoc-entity-record';
-import {CommonDocPdfManagerModule, PdfManagerConfigType} from '../../backend-commons/modules/cdoc-pdf-manager-module';
+import {
+    CommonDocPdfManagerModule,
+    PdfExportProcessingOptions
+} from '../../backend-commons/modules/cdoc-pdf-manager-module';
 import {PDocRecord} from '@dps/mycms-commons/dist/pdoc-commons/model/records/pdoc-record';
 import {PDocDataService} from '@dps/mycms-commons/dist/pdoc-commons/services/pdoc-data.service';
+import {PdfManager} from '../../media-commons/modules/pdf-manager';
 
 export class PagePdfManagerModule extends CommonDocPdfManagerModule<PDocDataService> {
 
     private sitemapConfig: SitemapConfig;
 
-    constructor(dataService: PDocDataService, backendConfig: PdfManagerConfigType, sitemapConfig: SitemapConfig) {
-        super(dataService, backendConfig);
+    constructor(dataService: PDocDataService, pdfManager: PdfManager, sitemapConfig: SitemapConfig) {
+        super(dataService, pdfManager);
         this.sitemapConfig = sitemapConfig;
     }
 
     protected exportCommonDocRecordPdfFile(mdoc: CommonDocRecord, action: string, exportDir: string, exportName: string,
-                                           processingOptions: ProcessingOptions) {
-        return this.generatePdf(<PDocRecord>mdoc, action, exportDir, this.sitemapConfig.showBaseUrl, undefined, false);
+                                           processingOptions: PdfExportProcessingOptions & ProcessingOptions) {
+        return this.generatePdf(<PDocRecord>mdoc, action, exportDir, this.sitemapConfig.showBaseUrl, undefined, processingOptions, false);
     }
 
     protected generateWebShotUrl(action: string, baseUrl: string, mdoc: PDocRecord, queryParams: string) {

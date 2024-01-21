@@ -4,12 +4,15 @@
 
 ## 6.1.0
 - backend: added pre-generated pdf-support for cdoc and pages
+- backend: playlistservice - add csv-export
+- backend: added pdf-manager
 
 ### new features
 - backend: added pre-generated pdf-support for cdoc and pages
+- backend: added pdf-manager
 
 ### improvements
-- none
+- backend: playlistservice - add csv-export
 
 ### bug fixes
 - none

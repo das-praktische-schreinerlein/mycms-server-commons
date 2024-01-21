@@ -10,6 +10,7 @@ export declare abstract class CommonDocPlaylistServerModule<R extends CommonDocR
     protected dataService: D;
     protected playlistExporter: CommonDocPlaylistExporter<R, F, S, D>;
     static configurePlaylistServerRoutes(app: express.Application, apiPrefix: string, cdocPlaylistServerModule: CommonDocPlaylistServerModule<CommonDocRecord, CommonDocSearchForm, CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>, CommonDocDataService<CommonDocRecord, CommonDocSearchForm, CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>>>, backendConfig: any | CommonBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>): void;
+    static configureCsvPlaylistServerRoutes(app: express.Application, apiPrefix: string, cdocPlaylistServerModule: CommonDocPlaylistServerModule<CommonDocRecord, CommonDocSearchForm, CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>, CommonDocDataService<CommonDocRecord, CommonDocSearchForm, CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>>>, backendConfig: any | CommonBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>): void;
     constructor(dataService: D, playlistExporter: CommonDocPlaylistExporter<R, F, S, D>);
     abstract getApiId(): string;
     getDataService(): D;

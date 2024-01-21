@@ -4,22 +4,24 @@ import { CommonDocRecord } from '@dps/mycms-commons/dist/search-commons/model/re
 import { CommonDocDataService } from '@dps/mycms-commons/dist/search-commons/services/cdoc-data.service';
 import { CommonDocSearchForm } from '@dps/mycms-commons/dist/search-commons/model/forms/cdoc-searchform';
 import { CommonDocSearchResult } from '@dps/mycms-commons/dist/search-commons/model/container/cdoc-searchresult';
-export interface PdfManagerConfigType {
-    nodejsBinaryPath: string;
-    webshot2pdfCommandPath: string;
+import { PdfManager } from '../../media-commons/modules/pdf-manager';
+export interface PdfExportProcessingOptions {
+    generateMergedPdf?: boolean;
+    addPageNumsStartingWith?: number;
 }
 export declare abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<CommonDocRecord, CommonDocSearchForm, CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>>> {
     protected dataService: DS;
-    protected backendConfig: PdfManagerConfigType;
-    protected nodePath: string;
-    protected webshot2pdfCommandPath: string;
-    constructor(dataService: DS, backendConfig: PdfManagerConfigType);
-    generatePdfs(action: string, generateDir: string, generateName: string, baseUrl: string, queryParams: string, processingOptions: ProcessingOptions, searchForm: CommonDocSearchForm, force: boolean): Promise<any>;
-    generatePdf(mdoc: CommonDocRecord, action: string, generateDir: string, baseUrl: string, queryParams: string, force: boolean): Promise<ExportProcessingResult<CommonDocRecord>>;
-    exportPdfs(action: string, exportDir: string, exportName: string, processingOptions: ProcessingOptions, searchForm: CommonDocSearchForm, force: boolean): Promise<any>;
-    protected abstract exportCommonDocRecordPdfFile(mdoc: CommonDocRecord, action: string, exportDir: string, exportName: string, processingOptions: ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>>;
+    protected pdfManager: PdfManager;
+    constructor(dataService: DS, pdfManager: PdfManager);
+    generatePdfs(action: string, generateDir: string, generateName: string, baseUrl: string, queryParams: string, processingOptions: PdfExportProcessingOptions & ProcessingOptions, searchForm: CommonDocSearchForm, force: boolean): Promise<any>;
+    generatePdf(mdoc: CommonDocRecord, action: string, generateDir: string, baseUrl: string, queryParams: string, processingOptions: PdfExportProcessingOptions & ProcessingOptions, force: boolean): Promise<ExportProcessingResult<CommonDocRecord>>;
+    exportPdfs(action: string, exportDir: string, exportName: string, processingOptions: PdfExportProcessingOptions & ProcessingOptions, searchForm: CommonDocSearchForm, force: boolean): Promise<any>;
+    protected abstract exportCommonDocRecordPdfFile(mdoc: CommonDocRecord, action: string, exportDir: string, exportName: string, processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>>;
     protected abstract generatePdfFileName(entity: CommonDocRecord): string;
     protected abstract updatePdfEntity(entity: CommonDocRecord, fileName: string): Promise<CommonDocRecord>;
     protected generateWebShotUrl(action: string, baseUrl: string, mdoc: CommonDocRecord, queryParams: string): string;
-    protected generatePdfResultListFile(exportDir: string, exportName: string, generateResults: ExportProcessingResult<CommonDocRecord>[]): Promise<any>;
+    protected generatePdfResultListFile(exportDir: string, exportName: string, generateResults: ExportProcessingResult<CommonDocRecord>[], processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]>;
+    protected generatePdfResultListLstFile(exportDir: string, exportName: string, generateResults: ExportProcessingResult<CommonDocRecord>[], processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]>;
+    protected generatePdfResultListHtmlFile(exportDir: string, exportName: string, generateResults: ExportProcessingResult<CommonDocRecord>[], processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]>;
+    protected generatePdfResultListPdfFile(exportDir: string, exportName: string, generateResults: ExportProcessingResult<CommonDocRecord>[], processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]>;
 }

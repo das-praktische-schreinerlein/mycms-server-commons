@@ -17,13 +17,13 @@ var string_utils_1 = require("@dps/mycms-commons/dist/commons/utils/string.utils
 var cdoc_pdf_manager_module_1 = require("../../backend-commons/modules/cdoc-pdf-manager-module");
 var PagePdfManagerModule = /** @class */ (function (_super) {
     __extends(PagePdfManagerModule, _super);
-    function PagePdfManagerModule(dataService, backendConfig, sitemapConfig) {
-        var _this = _super.call(this, dataService, backendConfig) || this;
+    function PagePdfManagerModule(dataService, pdfManager, sitemapConfig) {
+        var _this = _super.call(this, dataService, pdfManager) || this;
         _this.sitemapConfig = sitemapConfig;
         return _this;
     }
     PagePdfManagerModule.prototype.exportCommonDocRecordPdfFile = function (mdoc, action, exportDir, exportName, processingOptions) {
-        return this.generatePdf(mdoc, action, exportDir, this.sitemapConfig.showBaseUrl, undefined, false);
+        return this.generatePdf(mdoc, action, exportDir, this.sitemapConfig.showBaseUrl, undefined, processingOptions, false);
     };
     PagePdfManagerModule.prototype.generateWebShotUrl = function (action, baseUrl, mdoc, queryParams) {
         return baseUrl + '/' + mdoc.key + '?print&' + queryParams;

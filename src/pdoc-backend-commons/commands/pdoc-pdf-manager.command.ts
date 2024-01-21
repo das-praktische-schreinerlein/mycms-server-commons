@@ -13,8 +13,9 @@ import {PDocDataServiceModule} from '../modules/pdoc-dataservice.module';
 import {PagePdfManagerModule} from '../modules/pdoc-pdf-manager-module';
 import {PDocExportManagerUtils} from '../modules/pdoc-export-manager.utils';
 import {CommonPDocBackendConfigType} from '../modules/pdoc-backend.commons';
-import {PdfManagerConfigType} from '../../backend-commons/modules/cdoc-pdf-manager-module';
+import {PdfExportProcessingOptions} from '../../backend-commons/modules/cdoc-pdf-manager-module';
 import {CommonPdfBackendConfigType} from '../../backend-commons/modules/backend.commons';
+import {PdfManager, PdfManagerConfigType} from '../../media-commons/modules/pdf-manager';
 
 
 export interface PDocPdfBackendConfigType extends
@@ -70,10 +71,11 @@ export class PDocPdfManagerCommand extends CommonAdminCommand {
             dataService.setWritable(true);
         }
 
-        const pdfManagerModule = new PagePdfManagerModule(dataService, backendConfig, sitemapConfig);
+        const pdfManager = new PdfManager(backendConfig);
+        const pdfManagerModule = new PagePdfManagerModule(dataService, pdfManager, sitemapConfig);
 
         let promise: Promise<any>;
-        const processingOptions: ProcessingOptions = {
+        const processingOptions: PdfExportProcessingOptions & ProcessingOptions = {
             ignoreErrors: Number.parseInt(argv['ignoreErrors'], 10) || 0,
             parallel: Number.parseInt(argv['parallel'], 10),
         };

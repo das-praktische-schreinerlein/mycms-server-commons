@@ -1,43 +1,31 @@
 import * as fs from 'fs';
 import {ExportProcessingResult} from '@dps/mycms-commons/dist/search-commons/services/cdoc-export.service';
-import {ProcessUtils} from '@dps/mycms-commons/dist/commons/utils/process.utils';
 import {ProcessingOptions} from '@dps/mycms-commons/dist/search-commons/services/cdoc-search.service';
 import {CommonDocRecord} from '@dps/mycms-commons/dist/search-commons/model/records/cdoc-entity-record';
 import {CommonDocDataService} from '@dps/mycms-commons/dist/search-commons/services/cdoc-data.service';
 import {CommonDocSearchForm} from '@dps/mycms-commons/dist/search-commons/model/forms/cdoc-searchform';
 import {CommonDocSearchResult} from '@dps/mycms-commons/dist/search-commons/model/container/cdoc-searchresult';
+import {PdfManager} from '../../media-commons/modules/pdf-manager';
 
-export interface PdfManagerConfigType {
-    nodejsBinaryPath: string
-    webshot2pdfCommandPath: string,
+export interface PdfExportProcessingOptions {
+    generateMergedPdf?: boolean;
+    addPageNumsStartingWith?: number;
 }
 
 export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<CommonDocRecord, CommonDocSearchForm,
     CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>>> {
 
     protected dataService: DS;
-    protected backendConfig: PdfManagerConfigType;
-    protected nodePath: string;
-    protected webshot2pdfCommandPath: string;
+    protected pdfManager: PdfManager;
 
-    constructor(dataService: DS, backendConfig: PdfManagerConfigType) {
+    constructor(dataService: DS, pdfManager: PdfManager) {
         this.dataService = dataService;
-        this.backendConfig = backendConfig;
-
-        this.nodePath = this.backendConfig.nodejsBinaryPath;
-        this.webshot2pdfCommandPath = this.backendConfig.webshot2pdfCommandPath;
-        if (!this.nodePath || !this.webshot2pdfCommandPath) {
-            console.error('CommonDocPdfManagerModule missing config - nodejsBinaryPath, webshot2pdfCommandPath',
-                this.nodePath, this.webshot2pdfCommandPath);
-            throw new Error('CommonDocPdfManagerModule missing config - nodejsBinaryPath, webshot2pdfCommandPath');
-        }
-
-        console.log('CommonDocPdfManagerModule starting with - nodejsBinaryPath, webshot2pdfCommandPath',
-            this.nodePath, this.webshot2pdfCommandPath);
+        this.pdfManager = pdfManager;
     }
 
     public generatePdfs(action: string, generateDir: string, generateName: string, baseUrl: string, queryParams: string,
-                        processingOptions: ProcessingOptions, searchForm: CommonDocSearchForm, force: boolean): Promise<any> {
+                        processingOptions: PdfExportProcessingOptions & ProcessingOptions, searchForm: CommonDocSearchForm,
+                        force: boolean): Promise<any> {
         const me = this;
 
         if (baseUrl === undefined || baseUrl === '') {
@@ -67,7 +55,8 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
 
         const generateCallback = function (mdoc: CommonDocRecord): Promise<{}>[] {
             return [
-                me.generatePdf(mdoc, action, generateDir, baseUrl, queryParams, force).then( generateResult => {
+                me.generatePdf(mdoc, action, generateDir, baseUrl, queryParams,
+                    processingOptions, force).then( generateResult => {
                     generateResults.push(generateResult);
                     return Promise.resolve(generateResult);
                 })
@@ -80,11 +69,12 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
             showFacets: false,
             showForm: false
         }, processingOptions).then(() => {
-            return this.generatePdfResultListFile(generateDir, generateName, generateResults);
+            return this.generatePdfResultListFile(generateDir, generateName, generateResults, processingOptions);
         });
     }
 
-    public generatePdf(mdoc: CommonDocRecord, action: string, generateDir: string, baseUrl: string, queryParams: string, force: boolean):
+    public generatePdf(mdoc: CommonDocRecord, action: string, generateDir: string, baseUrl: string, queryParams: string,
+                       processingOptions: PdfExportProcessingOptions & ProcessingOptions, force: boolean):
         Promise<ExportProcessingResult<CommonDocRecord>> {
         const me = this;
 
@@ -123,36 +113,7 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
                 return resolve(generateResult);
             }
 
-            return ProcessUtils.executeCommandAsync(this.nodePath, ['--max-old-space-size=8192',
-                    this.webshot2pdfCommandPath,
-                    url,
-                    absDestPath],
-                function (buffer) {
-                    if (!buffer) {
-                        return;
-                    }
-                    console.log(buffer.toString(), me.webshot2pdfCommandPath,
-                        url,
-                        absDestPath);
-                },
-                function (buffer) {
-                    if (!buffer) {
-                        return;
-                    }
-                    console.error(buffer.toString());
-                }
-            ).then(code => {
-                if (code !== 0) {
-                    const errMsg = 'FAILED - webshot2pdf url: "' + url + '"' +
-                        ' file: "' + absDestPath + '" failed returnCode:' + code;
-                    console.warn(errMsg)
-                    return reject(errMsg);
-                }
-
-                const msg = 'SUCCESS - webshot2pdf url: "' + url + '"' +
-                    ' file: "' + absDestPath + '" succeeded returnCode:' + code;
-                console.log(msg)
-
+            return me.pdfManager.webshot2Pdf(url, absDestPath).then(code => {
                 generateResult = {
                     record: mdoc,
                     exportFileEntry: relDestPath,
@@ -170,7 +131,7 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
 
                 return resolve(generateResult);
             }).catch(error => {
-                const errMsg = 'FAILED - webshot2pdf url: "' + url + '"' +
+                const errMsg = 'FAILED - generatePdf url: "' + url + '"' +
                     ' file: "' + absDestPath + '" failed returnCode:' + error;
                 console.warn(errMsg)
                 return reject(errMsg);
@@ -179,7 +140,8 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
     }
 
     public exportPdfs(action: string, exportDir: string, exportName: string,
-                      processingOptions: ProcessingOptions, searchForm: CommonDocSearchForm, force: boolean): Promise<any> {
+                      processingOptions: PdfExportProcessingOptions & ProcessingOptions, searchForm: CommonDocSearchForm,
+                      force: boolean): Promise<any> {
         const me = this;
 
         if (exportDir === undefined) {
@@ -213,12 +175,12 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
             showFacets: false,
             showForm: false
         }, processingOptions).then(() => {
-            return this.generatePdfResultListFile(exportDir, exportName, exportResults);
+            return this.generatePdfResultListFile(exportDir, exportName, exportResults, processingOptions);
         });
     }
 
     protected abstract exportCommonDocRecordPdfFile(mdoc: CommonDocRecord, action: string, exportDir: string, exportName: string,
-                                                    processingOptions: ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>>;
+                                                    processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>>;
 
 
     protected abstract generatePdfFileName(entity: CommonDocRecord): string;
@@ -230,7 +192,22 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
     }
 
     protected generatePdfResultListFile(exportDir: string, exportName: string,
-                                        generateResults: ExportProcessingResult<CommonDocRecord>[]): Promise<any> {
+                                        generateResults: ExportProcessingResult<CommonDocRecord>[],
+                                        processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]> {
+        return this.generatePdfResultListLstFile(exportDir, exportName, generateResults, processingOptions).then(() => {
+            return this.generatePdfResultListHtmlFile(exportDir, exportName, generateResults, processingOptions);
+        }).then(() => {
+            if (processingOptions.generateMergedPdf) {
+                return this.generatePdfResultListPdfFile(exportDir, exportName, generateResults, processingOptions);
+            }
+
+            return Promise.resolve(generateResults);
+        })
+    }
+
+    protected generatePdfResultListLstFile(exportDir: string, exportName: string,
+                                           generateResults: ExportProcessingResult<CommonDocRecord>[],
+                                           processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]> {
         const exportListFile = exportDir + '/' + exportName + '.lst';
         if (fs.existsSync(exportListFile) && !fs.statSync(exportListFile).isFile()) {
             return Promise.reject('exportBaseFileName must be file');
@@ -243,6 +220,12 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
         fs.writeFileSync(exportListFile, fileList);
         console.log('wrote fileList', exportListFile);
 
+        return Promise.resolve(generateResults);
+    }
+
+    protected generatePdfResultListHtmlFile(exportDir: string, exportName: string,
+                                            generateResults: ExportProcessingResult<CommonDocRecord>[],
+                                            processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]> {
         const exportHtmlFile = exportDir + '/' + exportName + '.html';
         if (fs.existsSync(exportHtmlFile) && !fs.statSync(exportHtmlFile).isFile()) {
             return Promise.reject('exportBaseFileName must be file');
@@ -261,8 +244,33 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
         fs.writeFileSync(exportHtmlFile, htmlFileList);
         console.log('wrote htmlFile', exportHtmlFile);
 
-        return Promise.resolve();
+        return Promise.resolve(generateResults);
     }
 
+    protected generatePdfResultListPdfFile(exportDir: string, exportName: string,
+                                           generateResults: ExportProcessingResult<CommonDocRecord>[],
+                                           processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]> {
+        const exportPdfFile = exportDir + '/' + exportName + '.pdf';
+        if (fs.existsSync(exportPdfFile) && !fs.statSync(exportPdfFile).isFile()) {
+            return Promise.reject('exportBaseFileName must be file');
+        }
+
+        const pdfFiles = generateResults.map(value => {
+            return value.exportFileEntry});
+
+        return this.pdfManager.mergePdfs(exportPdfFile,
+            exportDir + '/' + exportName + '.lst',
+            exportDir + '/' + exportName + '.html',
+            pdfFiles).then((exportedPdfFile) => {
+            if (processingOptions.addPageNumsStartingWith > 0) {
+                return this.pdfManager.addPageNumToPdf(exportedPdfFile, processingOptions.addPageNumsStartingWith || 1);
+            }
+
+            return Promise.resolve(exportedPdfFile);
+        }).then((exportedPdfFile) => {
+            console.log('wrote pdfFile', exportedPdfFile);
+            return Promise.resolve(generateResults);
+        });
+    }
 }
 

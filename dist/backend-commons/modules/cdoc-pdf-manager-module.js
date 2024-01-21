@@ -1,18 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
-var process_utils_1 = require("@dps/mycms-commons/dist/commons/utils/process.utils");
 var CommonDocPdfManagerModule = /** @class */ (function () {
-    function CommonDocPdfManagerModule(dataService, backendConfig) {
+    function CommonDocPdfManagerModule(dataService, pdfManager) {
         this.dataService = dataService;
-        this.backendConfig = backendConfig;
-        this.nodePath = this.backendConfig.nodejsBinaryPath;
-        this.webshot2pdfCommandPath = this.backendConfig.webshot2pdfCommandPath;
-        if (!this.nodePath || !this.webshot2pdfCommandPath) {
-            console.error('CommonDocPdfManagerModule missing config - nodejsBinaryPath, webshot2pdfCommandPath', this.nodePath, this.webshot2pdfCommandPath);
-            throw new Error('CommonDocPdfManagerModule missing config - nodejsBinaryPath, webshot2pdfCommandPath');
-        }
-        console.log('CommonDocPdfManagerModule starting with - nodejsBinaryPath, webshot2pdfCommandPath', this.nodePath, this.webshot2pdfCommandPath);
+        this.pdfManager = pdfManager;
     }
     CommonDocPdfManagerModule.prototype.generatePdfs = function (action, generateDir, generateName, baseUrl, queryParams, processingOptions, searchForm, force) {
         var _this = this;
@@ -39,7 +31,7 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
         var generateResults = [];
         var generateCallback = function (mdoc) {
             return [
-                me.generatePdf(mdoc, action, generateDir, baseUrl, queryParams, force).then(function (generateResult) {
+                me.generatePdf(mdoc, action, generateDir, baseUrl, queryParams, processingOptions, force).then(function (generateResult) {
                     generateResults.push(generateResult);
                     return Promise.resolve(generateResult);
                 })
@@ -51,10 +43,10 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
             showFacets: false,
             showForm: false
         }, processingOptions).then(function () {
-            return _this.generatePdfResultListFile(generateDir, generateName, generateResults);
+            return _this.generatePdfResultListFile(generateDir, generateName, generateResults, processingOptions);
         });
     };
-    CommonDocPdfManagerModule.prototype.generatePdf = function (mdoc, action, generateDir, baseUrl, queryParams, force) {
+    CommonDocPdfManagerModule.prototype.generatePdf = function (mdoc, action, generateDir, baseUrl, queryParams, processingOptions, force) {
         var _this = this;
         var me = this;
         var url = this.generateWebShotUrl(action, baseUrl, mdoc, queryParams);
@@ -87,29 +79,7 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
                 }
                 return resolve(generateResult);
             }
-            return process_utils_1.ProcessUtils.executeCommandAsync(_this.nodePath, ['--max-old-space-size=8192',
-                _this.webshot2pdfCommandPath,
-                url,
-                absDestPath], function (buffer) {
-                if (!buffer) {
-                    return;
-                }
-                console.log(buffer.toString(), me.webshot2pdfCommandPath, url, absDestPath);
-            }, function (buffer) {
-                if (!buffer) {
-                    return;
-                }
-                console.error(buffer.toString());
-            }).then(function (code) {
-                if (code !== 0) {
-                    var errMsg = 'FAILED - webshot2pdf url: "' + url + '"' +
-                        ' file: "' + absDestPath + '" failed returnCode:' + code;
-                    console.warn(errMsg);
-                    return reject(errMsg);
-                }
-                var msg = 'SUCCESS - webshot2pdf url: "' + url + '"' +
-                    ' file: "' + absDestPath + '" succeeded returnCode:' + code;
-                console.log(msg);
+            return me.pdfManager.webshot2Pdf(url, absDestPath).then(function (code) {
                 generateResult = {
                     record: mdoc,
                     exportFileEntry: relDestPath,
@@ -125,7 +95,7 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
                 }
                 return resolve(generateResult);
             }).catch(function (error) {
-                var errMsg = 'FAILED - webshot2pdf url: "' + url + '"' +
+                var errMsg = 'FAILED - generatePdf url: "' + url + '"' +
                     ' file: "' + absDestPath + '" failed returnCode:' + error;
                 console.warn(errMsg);
                 return reject(errMsg);
@@ -162,13 +132,24 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
             showFacets: false,
             showForm: false
         }, processingOptions).then(function () {
-            return _this.generatePdfResultListFile(exportDir, exportName, exportResults);
+            return _this.generatePdfResultListFile(exportDir, exportName, exportResults, processingOptions);
         });
     };
     CommonDocPdfManagerModule.prototype.generateWebShotUrl = function (action, baseUrl, mdoc, queryParams) {
         return baseUrl + '/' + mdoc.id + '?print&' + queryParams;
     };
-    CommonDocPdfManagerModule.prototype.generatePdfResultListFile = function (exportDir, exportName, generateResults) {
+    CommonDocPdfManagerModule.prototype.generatePdfResultListFile = function (exportDir, exportName, generateResults, processingOptions) {
+        var _this = this;
+        return this.generatePdfResultListLstFile(exportDir, exportName, generateResults, processingOptions).then(function () {
+            return _this.generatePdfResultListHtmlFile(exportDir, exportName, generateResults, processingOptions);
+        }).then(function () {
+            if (processingOptions.generateMergedPdf) {
+                return _this.generatePdfResultListPdfFile(exportDir, exportName, generateResults, processingOptions);
+            }
+            return Promise.resolve(generateResults);
+        });
+    };
+    CommonDocPdfManagerModule.prototype.generatePdfResultListLstFile = function (exportDir, exportName, generateResults, processingOptions) {
         var exportListFile = exportDir + '/' + exportName + '.lst';
         if (fs.existsSync(exportListFile) && !fs.statSync(exportListFile).isFile()) {
             return Promise.reject('exportBaseFileName must be file');
@@ -178,6 +159,9 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
         }).join('\n');
         fs.writeFileSync(exportListFile, fileList);
         console.log('wrote fileList', exportListFile);
+        return Promise.resolve(generateResults);
+    };
+    CommonDocPdfManagerModule.prototype.generatePdfResultListHtmlFile = function (exportDir, exportName, generateResults, processingOptions) {
         var exportHtmlFile = exportDir + '/' + exportName + '.html';
         if (fs.existsSync(exportHtmlFile) && !fs.statSync(exportHtmlFile).isFile()) {
             return Promise.reject('exportBaseFileName must be file');
@@ -193,7 +177,26 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
         }).join('\n');
         fs.writeFileSync(exportHtmlFile, htmlFileList);
         console.log('wrote htmlFile', exportHtmlFile);
-        return Promise.resolve();
+        return Promise.resolve(generateResults);
+    };
+    CommonDocPdfManagerModule.prototype.generatePdfResultListPdfFile = function (exportDir, exportName, generateResults, processingOptions) {
+        var _this = this;
+        var exportPdfFile = exportDir + '/' + exportName + '.pdf';
+        if (fs.existsSync(exportPdfFile) && !fs.statSync(exportPdfFile).isFile()) {
+            return Promise.reject('exportBaseFileName must be file');
+        }
+        var pdfFiles = generateResults.map(function (value) {
+            return value.exportFileEntry;
+        });
+        return this.pdfManager.mergePdfs(exportPdfFile, exportDir + '/' + exportName + '.lst', exportDir + '/' + exportName + '.html', pdfFiles).then(function (exportedPdfFile) {
+            if (processingOptions.addPageNumsStartingWith > 0) {
+                return _this.pdfManager.addPageNumToPdf(exportedPdfFile, processingOptions.addPageNumsStartingWith || 1);
+            }
+            return Promise.resolve(exportedPdfFile);
+        }).then(function (exportedPdfFile) {
+            console.log('wrote pdfFile', exportedPdfFile);
+            return Promise.resolve(generateResults);
+        });
     };
     return CommonDocPdfManagerModule;
 }());
