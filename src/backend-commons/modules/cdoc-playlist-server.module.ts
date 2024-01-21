@@ -100,7 +100,7 @@ export abstract class CommonDocPlaylistServerModule<R extends CommonDocRecord, F
                 return next();
             })
             .get(function(req, res, next) {
-                const searchForm = this.getDataService().newSearchForm(req.query);
+                const searchForm = cdocPlaylistServerModule.getDataService().newSearchForm(req.query);
                 if (!cdocPlaylistServerModule.isSearchFormValid(searchForm)) {
                     console.warn('form invalid');
                     res.send('');

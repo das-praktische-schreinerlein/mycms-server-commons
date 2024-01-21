@@ -76,7 +76,7 @@ var CommonDocPlaylistServerModule = /** @class */ (function () {
             return next();
         })
             .get(function (req, res, next) {
-            var searchForm = this.getDataService().newSearchForm(req.query);
+            var searchForm = cdocPlaylistServerModule.getDataService().newSearchForm(req.query);
             if (!cdocPlaylistServerModule.isSearchFormValid(searchForm)) {
                 console.warn('form invalid');
                 res.send('');
