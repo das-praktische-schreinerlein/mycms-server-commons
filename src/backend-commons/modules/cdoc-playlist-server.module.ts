@@ -107,7 +107,11 @@ export abstract class CommonDocPlaylistServerModule<R extends CommonDocRecord, F
                     return next();
                 }
                 try {
-                    cdocPlaylistServerModule.playlistExporter.exportCsvPlaylist(exportConfig, searchForm).then(playlist => {
+                    const sessionExportConfig: CommonDocPlaylistExporterConfig = {
+                        ...exportConfig,
+                        exportProfile: 'default' // TODO get exportProfile from parameter
+                    };
+                    cdocPlaylistServerModule.playlistExporter.exportCsvPlaylist(sessionExportConfig, searchForm).then(playlist => {
                         if (playlist === undefined) {
                             console.log('csvplaylist not fullfilled');
                             res.status(403);
