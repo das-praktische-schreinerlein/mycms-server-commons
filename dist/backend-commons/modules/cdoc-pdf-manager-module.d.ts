@@ -10,6 +10,7 @@ export interface PdfExportProcessingOptions {
     addPageNumsStartingWith?: number;
     tocTemplate?: string;
     trimEmptyPages?: boolean;
+    updatePdfEntity?: boolean;
 }
 export declare abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<CommonDocRecord, CommonDocSearchForm, CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>>> {
     protected dataService: DS;

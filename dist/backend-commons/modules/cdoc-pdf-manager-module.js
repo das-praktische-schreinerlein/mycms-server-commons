@@ -70,7 +70,7 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
                     externalRecordFieldMappings: undefined,
                     mediaFileMappings: undefined
                 };
-                if (mdoc['pdfFile'] !== fileName) {
+                if (processingOptions.updatePdfEntity && mdoc['pdfFile'] !== fileName) {
                     return _this.updatePdfEntity(mdoc, fileName).then(function () {
                         resolve(generateResult);
                     }).catch(function (err) {

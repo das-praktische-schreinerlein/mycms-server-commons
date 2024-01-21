@@ -12,6 +12,7 @@ export interface PdfExportProcessingOptions {
     addPageNumsStartingWith?: number;
     tocTemplate?: string;
     trimEmptyPages?: boolean;
+    updatePdfEntity? : boolean;
 }
 
 export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<CommonDocRecord, CommonDocSearchForm,
@@ -104,7 +105,7 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
                     mediaFileMappings: undefined
                 };
 
-                if (mdoc['pdfFile'] !== fileName) {
+                if (processingOptions.updatePdfEntity && mdoc['pdfFile'] !== fileName) {
                     return this.updatePdfEntity(mdoc, fileName).then(() => {
                         resolve(generateResult);
                     }).catch(err => {
