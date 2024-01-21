@@ -4,8 +4,12 @@ import {CommonAdminCommand} from '../../backend-commons/commands/common-admin.co
 import {
     HtmlValidationRule,
     KeywordValidationRule,
+    NumberValidationRule,
     SimpleConfigFilePathValidationRule,
-    ValidationRule
+    SimpleFilePathListValidationRule,
+    SimpleFilePathValidationRule,
+    ValidationRule,
+    WhiteListValidationRule
 } from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
 import {SitemapConfig} from '../../backend-commons/modules/sitemap-generator.module';
 import {PDocFileUtils} from '@dps/mycms-commons/dist/pdoc-commons/services/pdoc-file.utils';
@@ -33,6 +37,12 @@ export class PDocPdfManagerCommand extends CommonAdminCommand {
             sitemap: new SimpleConfigFilePathValidationRule(true),
             baseUrl: new HtmlValidationRule(false),
             queryParams: new HtmlValidationRule(false),
+            generateMergedPdf: new WhiteListValidationRule(false, [true, false, 'true', 'false'], false),
+            addPageNumsStartingWith: new NumberValidationRule(false, -1, 99999, 0),
+            trimEmptyPages: new WhiteListValidationRule(false, [true, false, 'true', 'false'], true),
+            tocTemplate: new SimpleFilePathValidationRule(false),
+            destFile: new SimpleFilePathValidationRule(false),
+            srcFiles: new SimpleFilePathListValidationRule(false),
             ... PDocExportManagerUtils.createExportValidationRules(),
             ... PDocExportManagerUtils.createPDocSearchFormValidationRules()
         };
@@ -42,12 +52,18 @@ export class PDocPdfManagerCommand extends CommonAdminCommand {
         return [
             'exportPagePdfs',
             'generateDefaultPagePdfs',
-            'generateExternalPagePdfs'];
+            'generateExternalPagePdfs',
+            'mergePdfs',
+            'addPageNumToPdf',
+            'webshotToPdf'
+        ];
     }
 
     protected processCommandArgs(argv: {}): Promise<any> {
         // importDir and outputDir are used in CommonMediaManagerCommand too
         argv['exportDir'] = PDocFileUtils.normalizeCygwinPath(argv['exportDir']);
+        argv['srcFile'] = PDocFileUtils.normalizeCygwinPath(argv['srcFile']);
+        argv['tocTemplate'] = PDocFileUtils.normalizeCygwinPath(argv['tocTemplate']);
 
         const filePathConfigJson = argv['backend'];
         if (filePathConfigJson === undefined) {
@@ -78,6 +94,14 @@ export class PDocPdfManagerCommand extends CommonAdminCommand {
         const processingOptions: PdfExportProcessingOptions & ProcessingOptions = {
             ignoreErrors: Number.parseInt(argv['ignoreErrors'], 10) || 0,
             parallel: Number.parseInt(argv['parallel'], 10),
+            generateMergedPdf: argv['generateMergedPdf'] !== undefined && argv['generateMergedPdf'] !== false,
+            addPageNumsStartingWith: argv['addPageNumsStartingWith'] !== undefined && Number(argv['addPageNumsStartingWith'])
+                ? Number(argv['addPageNumsStartingWith'])
+                : undefined,
+            trimEmptyPages: argv['trimEmptyPages'] !== undefined && argv['trimEmptyPages'] !== false,
+            tocTemplate: argv['tocTemplate'] !== undefined && argv['tocTemplate'].length > 1
+                ? argv['tocTemplate'] + ''
+                : undefined
         };
         const force = argv['force'] === true || argv['force'] === 'true';
 
@@ -92,7 +116,44 @@ export class PDocPdfManagerCommand extends CommonAdminCommand {
         const exportDir = argv['exportDir'];
         const exportName = argv['exportName'];
 
+        const destFile = argv['destFile'];
+        const srcFiles: string[] = argv['srcFiles']
+            ? argv['srcFiles'].split(',')
+            : [];
+
         switch (action) {
+            case 'mergePdfs':
+                if (destFile === undefined) {
+                    return Promise.reject('ERROR - parameters required destFile');
+                }
+
+                if (srcFiles.length < 1) {
+                    return Promise.reject('ERROR - parameters required srcFiles');
+                }
+
+                promise = pdfManager.mergePdfs(destFile, undefined, undefined,
+                    processingOptions.tocTemplate, srcFiles, processingOptions.trimEmptyPages);
+
+                break;
+            case 'addPageNumToPdf':
+                if (destFile === undefined) {
+                    return Promise.reject('ERROR - parameters required destFile');
+                }
+
+                promise = pdfManager.addPageNumToPdf(destFile, processingOptions.addPageNumsStartingWith || 1);
+
+                break;
+            case 'webshotToPdf':
+                if (baseUrl === undefined) {
+                    return Promise.reject('ERROR - parameters required baseUrl');
+                }
+                if (destFile === undefined) {
+                    return Promise.reject('ERROR - parameters required destFile');
+                }
+
+                promise = pdfManager.webshot2Pdf(baseUrl, destFile);
+
+                break;
             case 'generateDefaultPagePdfs':
                 console.log('DO generate searchform for : ' + action, processingOptions);
                 promise = PDocExportManagerUtils.createPDocSearchForm(generatePdfsType, argv).then(searchForm => {

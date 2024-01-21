@@ -12,6 +12,6 @@ export declare class PdfManager {
     protected pdfAddPageNumCommandPath: string;
     constructor(backendConfig: PdfManagerConfigType);
     webshot2Pdf(url: string, absDestPath: string): Promise<string>;
-    mergePdfs(destFile: string, bookmarkFile: string, tocFile: string, pdfFiles: string[]): Promise<string>;
+    mergePdfs(destFile: string, bookmarkFile: string, tocFile: string, tocTemplate: string, pdfFiles: string[], trim: boolean): Promise<string>;
     addPageNumToPdf(destFile: string, startingWithNumber: number): Promise<string>;
 }

@@ -4,7 +4,7 @@ export interface PdfManagerConfigType {
     nodejsBinaryPath: string
     webshot2pdfCommandPath: string,
     pdfMergeCommandPath?: string,
-    pdfAddPageNumCommandPath?: string,
+    pdfAddPageNumCommandPath?: string
 }
 
 export class PdfManager {
@@ -78,7 +78,7 @@ export class PdfManager {
         });
     }
 
-    public mergePdfs(destFile: string, bookmarkFile: string, tocFile: string, pdfFiles: string[]): Promise<string> {
+    public mergePdfs(destFile: string, bookmarkFile: string, tocFile: string, tocTemplate: string, pdfFiles: string[], trim: boolean): Promise<string> {
         const me = this;
 
         if (!this.nodePath || !this.pdfMergeCommandPath) {
@@ -87,16 +87,27 @@ export class PdfManager {
             throw new Error('PdfManagerModule missing config - nodejsBinaryPath, pdfMergeCommandPath');
         }
 
+        let commandArgs = ['--max-old-space-size=8192',
+            this.pdfMergeCommandPath,
+            destFile
+        ];
+
+        if (trim) {
+            commandArgs = commandArgs.concat(['--trim']); // trim empty pages
+        }
+        if (bookmarkFile !== undefined && bookmarkFile.length > 0) {
+            commandArgs = commandArgs.concat(['--bookmarkfile', bookmarkFile]);
+        }
+        if (tocFile !== undefined && tocFile.length > 0) {
+            commandArgs = commandArgs.concat(['--tocfile', tocFile]);
+        }
+        if (tocTemplate !== undefined && tocTemplate.length > 0) {
+            commandArgs = commandArgs.concat(['--toctemplate', tocTemplate]);
+        }
+        commandArgs = commandArgs.concat(pdfFiles);
+
         return new Promise<any>((resolve, reject) => {
-            return ProcessUtils.executeCommandAsync(this.nodePath, ['--max-old-space-size=8192',
-                    this.pdfMergeCommandPath,
-                    destFile,
-                    '--trim', // trim empty pages
-                    '--bookmarkfile',
-                    bookmarkFile,
-                    '--tocfile',
-                    tocFile
-                ].concat(pdfFiles),
+            return ProcessUtils.executeCommandAsync(this.nodePath, commandArgs,
                 function (buffer) {
                     if (!buffer) {
                         return;

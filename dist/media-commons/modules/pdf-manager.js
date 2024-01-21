@@ -51,23 +51,32 @@ var PdfManager = /** @class */ (function () {
             });
         });
     };
-    PdfManager.prototype.mergePdfs = function (destFile, bookmarkFile, tocFile, pdfFiles) {
+    PdfManager.prototype.mergePdfs = function (destFile, bookmarkFile, tocFile, tocTemplate, pdfFiles, trim) {
         var _this = this;
         var me = this;
         if (!this.nodePath || !this.pdfMergeCommandPath) {
             console.error('PdfManagerModule missing config - nodejsBinaryPath, pdfMergeCommandPath', this.nodePath, this.pdfMergeCommandPath);
             throw new Error('PdfManagerModule missing config - nodejsBinaryPath, pdfMergeCommandPath');
         }
+        var commandArgs = ['--max-old-space-size=8192',
+            this.pdfMergeCommandPath,
+            destFile
+        ];
+        if (trim) {
+            commandArgs = commandArgs.concat(['--trim']); // trim empty pages
+        }
+        if (bookmarkFile !== undefined && bookmarkFile.length > 0) {
+            commandArgs = commandArgs.concat(['--bookmarkfile', bookmarkFile]);
+        }
+        if (tocFile !== undefined && tocFile.length > 0) {
+            commandArgs = commandArgs.concat(['--tocfile', tocFile]);
+        }
+        if (tocTemplate !== undefined && tocTemplate.length > 0) {
+            commandArgs = commandArgs.concat(['--toctemplate', tocTemplate]);
+        }
+        commandArgs = commandArgs.concat(pdfFiles);
         return new Promise(function (resolve, reject) {
-            return process_utils_1.ProcessUtils.executeCommandAsync(_this.nodePath, ['--max-old-space-size=8192',
-                _this.pdfMergeCommandPath,
-                destFile,
-                '--trim',
-                '--bookmarkfile',
-                bookmarkFile,
-                '--tocfile',
-                tocFile
-            ].concat(pdfFiles), function (buffer) {
+            return process_utils_1.ProcessUtils.executeCommandAsync(_this.nodePath, commandArgs, function (buffer) {
                 if (!buffer) {
                     return;
                 }

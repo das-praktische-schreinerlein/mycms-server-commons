@@ -38,18 +38,23 @@ var PDocPdfManagerCommand = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     PDocPdfManagerCommand.prototype.createValidationRules = function () {
-        return __assign({ action: new generic_validator_util_1.KeywordValidationRule(true), backend: new generic_validator_util_1.SimpleConfigFilePathValidationRule(true), sitemap: new generic_validator_util_1.SimpleConfigFilePathValidationRule(true), baseUrl: new generic_validator_util_1.HtmlValidationRule(false), queryParams: new generic_validator_util_1.HtmlValidationRule(false) }, pdoc_export_manager_utils_1.PDocExportManagerUtils.createExportValidationRules(), pdoc_export_manager_utils_1.PDocExportManagerUtils.createPDocSearchFormValidationRules());
+        return __assign({ action: new generic_validator_util_1.KeywordValidationRule(true), backend: new generic_validator_util_1.SimpleConfigFilePathValidationRule(true), sitemap: new generic_validator_util_1.SimpleConfigFilePathValidationRule(true), baseUrl: new generic_validator_util_1.HtmlValidationRule(false), queryParams: new generic_validator_util_1.HtmlValidationRule(false), generateMergedPdf: new generic_validator_util_1.WhiteListValidationRule(false, [true, false, 'true', 'false'], false), addPageNumsStartingWith: new generic_validator_util_1.NumberValidationRule(false, -1, 99999, 0), trimEmptyPages: new generic_validator_util_1.WhiteListValidationRule(false, [true, false, 'true', 'false'], true), tocTemplate: new generic_validator_util_1.SimpleFilePathValidationRule(false), destFile: new generic_validator_util_1.SimpleFilePathValidationRule(false), srcFiles: new generic_validator_util_1.SimpleFilePathListValidationRule(false) }, pdoc_export_manager_utils_1.PDocExportManagerUtils.createExportValidationRules(), pdoc_export_manager_utils_1.PDocExportManagerUtils.createPDocSearchFormValidationRules());
     };
     PDocPdfManagerCommand.prototype.definePossibleActions = function () {
         return [
             'exportPagePdfs',
             'generateDefaultPagePdfs',
-            'generateExternalPagePdfs'
+            'generateExternalPagePdfs',
+            'mergePdfs',
+            'addPageNumToPdf',
+            'webshotToPdf'
         ];
     };
     PDocPdfManagerCommand.prototype.processCommandArgs = function (argv) {
         // importDir and outputDir are used in CommonMediaManagerCommand too
         argv['exportDir'] = pdoc_file_utils_1.PDocFileUtils.normalizeCygwinPath(argv['exportDir']);
+        argv['srcFile'] = pdoc_file_utils_1.PDocFileUtils.normalizeCygwinPath(argv['srcFile']);
+        argv['tocTemplate'] = pdoc_file_utils_1.PDocFileUtils.normalizeCygwinPath(argv['tocTemplate']);
         var filePathConfigJson = argv['backend'];
         if (filePathConfigJson === undefined) {
             return Promise.reject('ERROR - parameters required backendConfig: "--backend"');
@@ -73,6 +78,14 @@ var PDocPdfManagerCommand = /** @class */ (function (_super) {
         var processingOptions = {
             ignoreErrors: Number.parseInt(argv['ignoreErrors'], 10) || 0,
             parallel: Number.parseInt(argv['parallel'], 10),
+            generateMergedPdf: argv['generateMergedPdf'] !== undefined && argv['generateMergedPdf'] !== false,
+            addPageNumsStartingWith: argv['addPageNumsStartingWith'] !== undefined && Number(argv['addPageNumsStartingWith'])
+                ? Number(argv['addPageNumsStartingWith'])
+                : undefined,
+            trimEmptyPages: argv['trimEmptyPages'] !== undefined && argv['trimEmptyPages'] !== false,
+            tocTemplate: argv['tocTemplate'] !== undefined && argv['tocTemplate'].length > 1
+                ? argv['tocTemplate'] + ''
+                : undefined
         };
         var force = argv['force'] === true || argv['force'] === 'true';
         var generatePdfsType = this.getGenerateTypeFromAction(action);
@@ -84,7 +97,35 @@ var PDocPdfManagerCommand = /** @class */ (function (_super) {
         var exportPdfsType = this.getExportTypeFromAction(action);
         var exportDir = argv['exportDir'];
         var exportName = argv['exportName'];
+        var destFile = argv['destFile'];
+        var srcFiles = argv['srcFiles']
+            ? argv['srcFiles'].split(',')
+            : [];
         switch (action) {
+            case 'mergePdfs':
+                if (destFile === undefined) {
+                    return Promise.reject('ERROR - parameters required destFile');
+                }
+                if (srcFiles.length < 1) {
+                    return Promise.reject('ERROR - parameters required srcFiles');
+                }
+                promise = pdfManager.mergePdfs(destFile, undefined, undefined, processingOptions.tocTemplate, srcFiles, processingOptions.trimEmptyPages);
+                break;
+            case 'addPageNumToPdf':
+                if (destFile === undefined) {
+                    return Promise.reject('ERROR - parameters required destFile');
+                }
+                promise = pdfManager.addPageNumToPdf(destFile, processingOptions.addPageNumsStartingWith || 1);
+                break;
+            case 'webshotToPdf':
+                if (baseUrl === undefined) {
+                    return Promise.reject('ERROR - parameters required baseUrl');
+                }
+                if (destFile === undefined) {
+                    return Promise.reject('ERROR - parameters required destFile');
+                }
+                promise = pdfManager.webshot2Pdf(baseUrl, destFile);
+                break;
             case 'generateDefaultPagePdfs':
                 console.log('DO generate searchform for : ' + action, processingOptions);
                 promise = pdoc_export_manager_utils_1.PDocExportManagerUtils.createPDocSearchForm(generatePdfsType, argv).then(function (searchForm) {

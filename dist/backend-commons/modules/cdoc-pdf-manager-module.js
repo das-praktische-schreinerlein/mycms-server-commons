@@ -150,7 +150,7 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
         });
     };
     CommonDocPdfManagerModule.prototype.generatePdfResultListLstFile = function (exportDir, exportName, generateResults, processingOptions) {
-        var exportListFile = exportDir + '/' + exportName + '.lst';
+        var exportListFile = exportDir + '/' + exportName + '-toc.lst';
         if (fs.existsSync(exportListFile) && !fs.statSync(exportListFile).isFile()) {
             return Promise.reject('exportBaseFileName must be file');
         }
@@ -162,7 +162,7 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
         return Promise.resolve(generateResults);
     };
     CommonDocPdfManagerModule.prototype.generatePdfResultListHtmlFile = function (exportDir, exportName, generateResults, processingOptions) {
-        var exportHtmlFile = exportDir + '/' + exportName + '.html';
+        var exportHtmlFile = exportDir + '/' + exportName + '-toc.html';
         if (fs.existsSync(exportHtmlFile) && !fs.statSync(exportHtmlFile).isFile()) {
             return Promise.reject('exportBaseFileName must be file');
         }
@@ -188,7 +188,7 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
         var pdfFiles = generateResults.map(function (value) {
             return value.exportFileEntry;
         });
-        return this.pdfManager.mergePdfs(exportPdfFile, exportDir + '/' + exportName + '.lst', exportDir + '/' + exportName + '.html', pdfFiles).then(function (exportedPdfFile) {
+        return this.pdfManager.mergePdfs(exportPdfFile, exportDir + '/' + exportName + '-toc.lst', exportDir + '/' + exportName + '-toc.html', processingOptions.tocTemplate, pdfFiles, processingOptions.trimEmptyPages).then(function (exportedPdfFile) {
             if (processingOptions.addPageNumsStartingWith > 0) {
                 return _this.pdfManager.addPageNumToPdf(exportedPdfFile, processingOptions.addPageNumsStartingWith || 1);
             }

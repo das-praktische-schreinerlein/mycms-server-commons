@@ -8,6 +8,8 @@ import { PdfManager } from '../../media-commons/modules/pdf-manager';
 export interface PdfExportProcessingOptions {
     generateMergedPdf?: boolean;
     addPageNumsStartingWith?: number;
+    tocTemplate?: string;
+    trimEmptyPages?: boolean;
 }
 export declare abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<CommonDocRecord, CommonDocSearchForm, CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>>> {
     protected dataService: DS;

@@ -10,6 +10,8 @@ import {PdfManager} from '../../media-commons/modules/pdf-manager';
 export interface PdfExportProcessingOptions {
     generateMergedPdf?: boolean;
     addPageNumsStartingWith?: number;
+    tocTemplate?: string;
+    trimEmptyPages?: boolean;
 }
 
 export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<CommonDocRecord, CommonDocSearchForm,
@@ -208,7 +210,7 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
     protected generatePdfResultListLstFile(exportDir: string, exportName: string,
                                            generateResults: ExportProcessingResult<CommonDocRecord>[],
                                            processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]> {
-        const exportListFile = exportDir + '/' + exportName + '.lst';
+        const exportListFile = exportDir + '/' + exportName + '-toc.lst';
         if (fs.existsSync(exportListFile) && !fs.statSync(exportListFile).isFile()) {
             return Promise.reject('exportBaseFileName must be file');
         }
@@ -226,7 +228,7 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
     protected generatePdfResultListHtmlFile(exportDir: string, exportName: string,
                                             generateResults: ExportProcessingResult<CommonDocRecord>[],
                                             processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]> {
-        const exportHtmlFile = exportDir + '/' + exportName + '.html';
+        const exportHtmlFile = exportDir + '/' + exportName + '-toc.html';
         if (fs.existsSync(exportHtmlFile) && !fs.statSync(exportHtmlFile).isFile()) {
             return Promise.reject('exportBaseFileName must be file');
         }
@@ -259,9 +261,11 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
             return value.exportFileEntry});
 
         return this.pdfManager.mergePdfs(exportPdfFile,
-            exportDir + '/' + exportName + '.lst',
-            exportDir + '/' + exportName + '.html',
-            pdfFiles).then((exportedPdfFile) => {
+            exportDir + '/' + exportName + '-toc.lst',
+            exportDir + '/' + exportName + '-toc.html',
+            processingOptions.tocTemplate,
+            pdfFiles,
+            processingOptions.trimEmptyPages).then((exportedPdfFile) => {
             if (processingOptions.addPageNumsStartingWith > 0) {
                 return this.pdfManager.addPageNumToPdf(exportedPdfFile, processingOptions.addPageNumsStartingWith || 1);
             }
