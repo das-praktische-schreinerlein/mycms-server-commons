@@ -65,16 +65,18 @@ var PdfManager = /** @class */ (function () {
         if (trim) {
             commandArgs = commandArgs.concat(['--trim']); // trim empty pages
         }
-        if (bookmarkFile !== undefined && bookmarkFile.length > 0) {
-            commandArgs = commandArgs.concat(['--bookmarkfile', bookmarkFile]);
+        if (tocTemplate !== undefined && tocTemplate.length > 0) {
+            commandArgs = commandArgs.concat(['--toctemplate', tocTemplate]);
         }
         if (tocFile !== undefined && tocFile.length > 0) {
             commandArgs = commandArgs.concat(['--tocfile', tocFile]);
         }
-        if (tocTemplate !== undefined && tocTemplate.length > 0) {
-            commandArgs = commandArgs.concat(['--toctemplate', tocTemplate]);
+        if (bookmarkFile !== undefined && bookmarkFile.length > 0) {
+            commandArgs = commandArgs.concat(['--bookmarkfile', bookmarkFile]);
         }
-        commandArgs = commandArgs.concat(pdfFiles);
+        else {
+            commandArgs = commandArgs.concat(pdfFiles);
+        }
         return new Promise(function (resolve, reject) {
             return process_utils_1.ProcessUtils.executeCommandAsync(_this.nodePath, commandArgs, function (buffer) {
                 if (!buffer) {

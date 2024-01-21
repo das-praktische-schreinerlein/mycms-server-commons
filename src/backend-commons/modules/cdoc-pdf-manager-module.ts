@@ -217,7 +217,7 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
 
         const fileList = generateResults.map(value => {
             return [value.exportFileEntry, value.record.name,  value.record.type, ''].join('\t')
-        }).join('\n')
+        }).join('\n');
 
         fs.writeFileSync(exportListFile, fileList);
         console.log('wrote fileList', exportListFile);
@@ -233,7 +233,7 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
             return Promise.reject('exportBaseFileName must be file');
         }
 
-        const htmlFileList = generateResults.map(value => {
+        let htmlFileList = generateResults.map(value => {
             const fileName = value.exportFileEntry;
             const name = value.record.name;
             const rtype = value.record.type;
@@ -241,7 +241,16 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
                 .replace(/\$fileName/g, fileName)
                 .replace(/\$name/g, name)
                 .replace(/\$rtype/g, rtype);
-        }).join('\n')
+        }).join('\n');
+
+        if (processingOptions.tocTemplate) {
+            try {
+                const html = fs.readFileSync(processingOptions.tocTemplate, {encoding: 'utf8'});
+                htmlFileList = html.replace('{{TOC}}', htmlFileList);
+            } catch (err) {
+                return Promise.reject('error while reading tocTemplate: ' + err);
+            }
+        }
 
         fs.writeFileSync(exportHtmlFile, htmlFileList);
         console.log('wrote htmlFile', exportHtmlFile);

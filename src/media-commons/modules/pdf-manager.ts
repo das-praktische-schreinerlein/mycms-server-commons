@@ -95,16 +95,18 @@ export class PdfManager {
         if (trim) {
             commandArgs = commandArgs.concat(['--trim']); // trim empty pages
         }
-        if (bookmarkFile !== undefined && bookmarkFile.length > 0) {
-            commandArgs = commandArgs.concat(['--bookmarkfile', bookmarkFile]);
+        if (tocTemplate !== undefined && tocTemplate.length > 0) {
+            commandArgs = commandArgs.concat(['--toctemplate', tocTemplate]);
         }
         if (tocFile !== undefined && tocFile.length > 0) {
             commandArgs = commandArgs.concat(['--tocfile', tocFile]);
         }
-        if (tocTemplate !== undefined && tocTemplate.length > 0) {
-            commandArgs = commandArgs.concat(['--toctemplate', tocTemplate]);
+
+        if (bookmarkFile !== undefined && bookmarkFile.length > 0) {
+            commandArgs = commandArgs.concat(['--bookmarkfile', bookmarkFile]);
+        } else {
+            commandArgs = commandArgs.concat(pdfFiles);
         }
-        commandArgs = commandArgs.concat(pdfFiles);
 
         return new Promise<any>((resolve, reject) => {
             return ProcessUtils.executeCommandAsync(this.nodePath, commandArgs,

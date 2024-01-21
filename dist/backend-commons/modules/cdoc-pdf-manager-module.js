@@ -175,6 +175,15 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
                 .replace(/\$name/g, name)
                 .replace(/\$rtype/g, rtype);
         }).join('\n');
+        if (processingOptions.tocTemplate) {
+            try {
+                var html = fs.readFileSync(processingOptions.tocTemplate, { encoding: 'utf8' });
+                htmlFileList = html.replace('{{TOC}}', htmlFileList);
+            }
+            catch (err) {
+                return Promise.reject('error while reading tocTemplate: ' + err);
+            }
+        }
         fs.writeFileSync(exportHtmlFile, htmlFileList);
         console.log('wrote htmlFile', exportHtmlFile);
         return Promise.resolve(generateResults);
