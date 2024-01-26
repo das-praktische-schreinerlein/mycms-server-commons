@@ -170,7 +170,7 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
             var fileName = value.exportFileEntry;
             var name = value.record.name;
             var rtype = value.record.type;
-            return "<div class='bookmark_line bookmark_line_$rtype'><div class='bookmark_file'><a href=\"$fileName\" target=\"_blank\">$fileName</a></div><div class='bookmark_name'>$name</div><div class='bookmark_page'></div></div>"
+            return "<div class='bookmark_line bookmark_line_$rtype'><div class='bookmark_file'><a href=\"$fileName\" target=\"_blank\">$fileName</a></div><div class='bookmark_name'><a href=\"$fileName\" target=\"_blank\">$name</a></div><div class='bookmark_page'></div></div>"
                 .replace(/\$fileName/g, fileName)
                 .replace(/\$name/g, name)
                 .replace(/\$rtype/g, rtype);
