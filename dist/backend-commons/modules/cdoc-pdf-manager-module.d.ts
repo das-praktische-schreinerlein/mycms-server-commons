@@ -27,4 +27,5 @@ export declare abstract class CommonDocPdfManagerModule<DS extends CommonDocData
     protected generatePdfResultListLstFile(exportDir: string, exportName: string, generateResults: ExportProcessingResult<CommonDocRecord>[], processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]>;
     protected generatePdfResultListHtmlFile(exportDir: string, exportName: string, generateResults: ExportProcessingResult<CommonDocRecord>[], processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]>;
     protected generatePdfResultListPdfFile(exportDir: string, exportName: string, generateResults: ExportProcessingResult<CommonDocRecord>[], processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>[]>;
+    protected checkIfPdfFileShouldUpdated(mdoc: CommonDocRecord, absDestPath: string): boolean;
 }

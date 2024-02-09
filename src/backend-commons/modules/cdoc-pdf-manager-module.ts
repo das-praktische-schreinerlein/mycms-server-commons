@@ -94,8 +94,9 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
         let generateResult: ExportProcessingResult<CommonDocRecord>;
 
         return new Promise<any>((resolve, reject) => {
-            if (!force && fs.existsSync(absDestPath)) {
-                const msg = 'SKIPPED - webshot2pdf url: "' + url + '" file: "' + absDestPath + '" file already exists';
+            if (!force && !this.checkIfPdfFileShouldUpdated(mdoc, absDestPath)) {
+                const msg = 'SKIPPED - webshot2pdf url: "' + url + '" file: "' + absDestPath + '" file already exists' +
+                    ' and newer than updatedAt:' + mdoc.updatedAt;
                 console.log(msg)
 
                 generateResult = {
@@ -285,6 +286,21 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
             console.log('wrote pdfFile', exportedPdfFile);
             return Promise.resolve(generateResults);
         });
+    }
+
+    protected checkIfPdfFileShouldUpdated(mdoc: CommonDocRecord, absDestPath: string): boolean {
+        if (!fs.existsSync(absDestPath)) {
+            return true;
+        }
+
+        const fileUpdateDate = fs.statSync(absDestPath).ctimeMs;
+        if (mdoc.updatedAt !== undefined && mdoc.updatedAt.getTime() < fileUpdateDate) {
+            const msg = 'HINT doc.updatedAt' + mdoc.updatedAt + ' < fileUpdateDate:' + new Date(fileUpdateDate);
+            console.log(msg)
+            return false
+        }
+
+        return true;
     }
 }
 

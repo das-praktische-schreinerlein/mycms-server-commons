@@ -61,8 +61,9 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
             + relDestPath;
         var generateResult;
         return new Promise(function (resolve, reject) {
-            if (!force && fs.existsSync(absDestPath)) {
-                var msg = 'SKIPPED - webshot2pdf url: "' + url + '" file: "' + absDestPath + '" file already exists';
+            if (!force && !_this.checkIfPdfFileShouldUpdated(mdoc, absDestPath)) {
+                var msg = 'SKIPPED - webshot2pdf url: "' + url + '" file: "' + absDestPath + '" file already exists' +
+                    ' and newer than updatedAt:' + mdoc.updatedAt;
                 console.log(msg);
                 generateResult = {
                     record: mdoc,
@@ -206,6 +207,18 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
             console.log('wrote pdfFile', exportedPdfFile);
             return Promise.resolve(generateResults);
         });
+    };
+    CommonDocPdfManagerModule.prototype.checkIfPdfFileShouldUpdated = function (mdoc, absDestPath) {
+        if (!fs.existsSync(absDestPath)) {
+            return true;
+        }
+        var fileUpdateDate = fs.statSync(absDestPath).ctimeMs;
+        if (mdoc.updatedAt !== undefined && mdoc.updatedAt.getTime() < fileUpdateDate) {
+            var msg = 'HINT doc.updatedAt' + mdoc.updatedAt + ' < fileUpdateDate:' + new Date(fileUpdateDate);
+            console.log(msg);
+            return false;
+        }
+        return true;
     };
     return CommonDocPdfManagerModule;
 }());
