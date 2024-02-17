@@ -294,7 +294,7 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
         }
 
         const fileUpdateDate = fs.statSync(absDestPath).ctimeMs;
-        if (mdoc.updatedAt !== undefined && mdoc.updatedAt.getTime() < fileUpdateDate) {
+        if (mdoc.updatedAt !== undefined && new Date(mdoc.updatedAt).getTime() < fileUpdateDate) {
             const msg = 'HINT doc.updatedAt' + mdoc.updatedAt + ' < fileUpdateDate:' + new Date(fileUpdateDate);
             console.log(msg)
             return false
