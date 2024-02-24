@@ -213,7 +213,7 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
             return true;
         }
         var fileUpdateDate = fs.statSync(absDestPath).ctimeMs;
-        if (mdoc.updatedAt !== undefined && new Date(mdoc.updatedAt).getTime() < fileUpdateDate) {
+        if (mdoc.updatedAt === undefined || new Date(mdoc.updatedAt).getTime() < fileUpdateDate) {
             var msg = 'HINT doc.updatedAt' + mdoc.updatedAt + ' < fileUpdateDate:' + new Date(fileUpdateDate);
             console.log(msg);
             return false;
