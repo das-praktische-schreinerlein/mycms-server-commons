@@ -2,7 +2,7 @@
  
 # Versions
 
-## 6.1.0
+## 6.1.0 (2024-05-12)
 - backend: added pre-generated pdf-support for cdoc and pages
 - backend: playlistservice - add csv-export
 - backend: added pdf-manager
