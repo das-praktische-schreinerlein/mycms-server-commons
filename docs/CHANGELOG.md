@@ -2,6 +2,22 @@
  
 # Versions
 
+## 6.2.0
+- bumped version up to be in sync with mycms-frontend-commons, mycms-commons
+
+### new features
+- none
+
+### improvements
+- none
+
+### bug fixes
+- none
+
+### breaking changes
+- none
+
+
 ## 6.1.0 (2024-05-12)
 - backend: added pre-generated pdf-support for cdoc and pages
 - backend: playlistservice - add csv-export
