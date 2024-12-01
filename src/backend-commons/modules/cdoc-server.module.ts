@@ -87,12 +87,21 @@ export abstract class CommonDocServerModule<R extends CommonDocRecord, F extends
                         loadTrack: req.query['loadTrack'] && req.query['loadTrack'] !== 'false',
                         showFacets: true
                     };
+
                     if (req.query['showFacets'] === 'false') {
                         searchOptions.showFacets = false;
                     } else if (req.query['showFacets'] === 'true') {
                         searchOptions.showFacets = true;
                     } else if (req.query['showFacets'] !== undefined) {
+                        // FIXME - validate this
                         searchOptions.showFacets = req.query['showFacets'].toString().split(',');
+                    }
+
+                    if (req.query['loadDetailsMode'] === false || req.query['loadDetailsMode'] === 'false') {
+                        searchOptions.loadDetailsMode = 'none';
+                    } else if (req.query['loadDetailsMode'] !== undefined) {
+                        // FIXME - validate this
+                        searchOptions.loadDetailsMode = req.query['loadDetailsMode'];
                     }
 
                     cdocServerModule.getDataService().search(searchForm, searchOptions).then(

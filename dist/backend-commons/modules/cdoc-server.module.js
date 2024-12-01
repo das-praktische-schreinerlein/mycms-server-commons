@@ -76,7 +76,15 @@ var CommonDocServerModule = /** @class */ (function () {
                     searchOptions_1.showFacets = true;
                 }
                 else if (req.query['showFacets'] !== undefined) {
+                    // FIXME - validate this
                     searchOptions_1.showFacets = req.query['showFacets'].toString().split(',');
+                }
+                if (req.query['loadDetailsMode'] === false || req.query['loadDetailsMode'] === 'false') {
+                    searchOptions_1.loadDetailsMode = 'none';
+                }
+                else if (req.query['loadDetailsMode'] !== undefined) {
+                    // FIXME - validate this
+                    searchOptions_1.loadDetailsMode = req.query['loadDetailsMode'];
                 }
                 cdocServerModule.getDataService().search(searchForm, searchOptions_1).then(function searchDone(searchResult) {
                     if (searchOptions_1.showForm === false) {

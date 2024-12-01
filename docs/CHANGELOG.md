@@ -4,6 +4,7 @@
 
 ## 6.2.0
 - bumped version up to be in sync with mycms-frontend-commons, mycms-commons
+- interpret parameter loadDetailsMode of GenericSearchOptions on server-request
 
 ### new features
 - none
@@ -15,7 +16,7 @@
 - none
 
 ### breaking changes
-- none
+- interpret parameter loadDetailsMode of GenericSearchOptions on server-request
 
 
 ## 6.1.0 (2024-05-12)
