@@ -34,14 +34,24 @@ export class PdfManager {
             this.nodePath, this.webshot2pdfCommandPath, this.pdfMergeCommandPath, this.pdfAddPageNumCommandPath);
     }
 
-    public webshot2Pdf(url: string, absDestPath: string): Promise<string> {
+    public webshot2Pdf(url: string, absDestPath: string, width?: number, delay?: number): Promise<string> {
         const me = this;
+        let commandArgs: any = [
+            '--max-old-space-size=8192',
+            this.webshot2pdfCommandPath
+        ];
+
+        if (width !== undefined) {
+            commandArgs = commandArgs.concat(['--width', width]);
+        }
+        if (width !== undefined) {
+            commandArgs = commandArgs.concat(['--delay', delay]);
+        }
+
+        commandArgs = commandArgs.concat([url, absDestPath]);
 
         return new Promise<any>((resolve, reject) => {
-            return ProcessUtils.executeCommandAsync(this.nodePath, ['--max-old-space-size=8192',
-                    this.webshot2pdfCommandPath,
-                    url,
-                    absDestPath],
+            return ProcessUtils.executeCommandAsync(this.nodePath, commandArgs,
                 function (buffer) {
                     if (!buffer) {
                         return;
@@ -78,7 +88,8 @@ export class PdfManager {
         });
     }
 
-    public mergePdfs(destFile: string, bookmarkFile: string, tocFile: string, tocTemplate: string, pdfFiles: string[], trim: boolean): Promise<string> {
+    public mergePdfs(destFile: string, bookmarkFile: string, tocFile: string, tocTemplate: string, pdfFiles: string[],
+                     trim: boolean): Promise<string> {
         const me = this;
 
         if (!this.nodePath || !this.pdfMergeCommandPath) {

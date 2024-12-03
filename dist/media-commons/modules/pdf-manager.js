@@ -15,14 +15,22 @@ var PdfManager = /** @class */ (function () {
         console.log('PdfManagerModule starting with - nodejsBinaryPath, webshot2pdfCommandPath' +
             ', pdfMergeCommandPath, pdfAddPageNumCommandPath', this.nodePath, this.webshot2pdfCommandPath, this.pdfMergeCommandPath, this.pdfAddPageNumCommandPath);
     }
-    PdfManager.prototype.webshot2Pdf = function (url, absDestPath) {
+    PdfManager.prototype.webshot2Pdf = function (url, absDestPath, width, delay) {
         var _this = this;
         var me = this;
+        var commandArgs = [
+            '--max-old-space-size=8192',
+            this.webshot2pdfCommandPath
+        ];
+        if (width !== undefined) {
+            commandArgs = commandArgs.concat(['--width', width]);
+        }
+        if (width !== undefined) {
+            commandArgs = commandArgs.concat(['--delay', delay]);
+        }
+        commandArgs = commandArgs.concat([url, absDestPath]);
         return new Promise(function (resolve, reject) {
-            return process_utils_1.ProcessUtils.executeCommandAsync(_this.nodePath, ['--max-old-space-size=8192',
-                _this.webshot2pdfCommandPath,
-                url,
-                absDestPath], function (buffer) {
+            return process_utils_1.ProcessUtils.executeCommandAsync(_this.nodePath, commandArgs, function (buffer) {
                 if (!buffer) {
                     return;
                 }

@@ -41,6 +41,8 @@ export class PDocPdfManagerCommand extends CommonAdminCommand {
             addPageNumsStartingWith: new NumberValidationRule(false, -1, 99999, 0),
             trimEmptyPages: new WhiteListValidationRule(false, [true, false, 'true', 'false'], true),
             tocTemplate: new SimpleFilePathValidationRule(false),
+            width: new NumberValidationRule(false, 100, 10000, 1210),
+            delay: new NumberValidationRule(false, 1000, 999999, 10000),
             destFile: new SimpleFilePathValidationRule(false),
             srcFiles: new SimpleFilePathListValidationRule(false),
             ... PDocExportManagerUtils.createExportValidationRules(),
@@ -98,7 +100,8 @@ export class PDocPdfManagerCommand extends CommonAdminCommand {
             addPageNumsStartingWith: argv['addPageNumsStartingWith'] !== undefined && Number(argv['addPageNumsStartingWith'])
                 ? Number(argv['addPageNumsStartingWith'])
                 : undefined,
-            trimEmptyPages: argv['trimEmptyPages'] !== undefined && argv['trimEmptyPages'] !== false,
+            trimEmptyPages: argv['trimEmptyPages'] !== undefined
+                && argv['trimEmptyPages'] !== false && argv['trimEmptyPages'] !== 'false',
             tocTemplate: argv['tocTemplate'] !== undefined && argv['tocTemplate'].length > 1
                 ? argv['tocTemplate'] + ''
                 : undefined
@@ -115,6 +118,9 @@ export class PDocPdfManagerCommand extends CommonAdminCommand {
         const exportPdfsType = this.getExportTypeFromAction(action);
         const exportDir = argv['exportDir'];
         const exportName = argv['exportName'];
+
+        const width = argv['width'] || 1210;
+        const delay = argv['delay'] || 10000;
 
         const destFile = argv['destFile'];
         const srcFiles: string[] = argv['srcFiles']
@@ -151,7 +157,7 @@ export class PDocPdfManagerCommand extends CommonAdminCommand {
                     return Promise.reject('ERROR - parameters required destFile');
                 }
 
-                promise = pdfManager.webshot2Pdf(baseUrl, destFile);
+                promise = pdfManager.webshot2Pdf(baseUrl, destFile, width, delay);
 
                 break;
             case 'generateDefaultPagePdfs':

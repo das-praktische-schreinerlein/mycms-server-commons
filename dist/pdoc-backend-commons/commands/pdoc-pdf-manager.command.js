@@ -38,7 +38,7 @@ var PDocPdfManagerCommand = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     PDocPdfManagerCommand.prototype.createValidationRules = function () {
-        return __assign({ action: new generic_validator_util_1.KeywordValidationRule(true), backend: new generic_validator_util_1.SimpleConfigFilePathValidationRule(true), sitemap: new generic_validator_util_1.SimpleConfigFilePathValidationRule(true), baseUrl: new generic_validator_util_1.HtmlValidationRule(false), queryParams: new generic_validator_util_1.HtmlValidationRule(false), generateMergedPdf: new generic_validator_util_1.WhiteListValidationRule(false, [true, false, 'true', 'false'], false), addPageNumsStartingWith: new generic_validator_util_1.NumberValidationRule(false, -1, 99999, 0), trimEmptyPages: new generic_validator_util_1.WhiteListValidationRule(false, [true, false, 'true', 'false'], true), tocTemplate: new generic_validator_util_1.SimpleFilePathValidationRule(false), destFile: new generic_validator_util_1.SimpleFilePathValidationRule(false), srcFiles: new generic_validator_util_1.SimpleFilePathListValidationRule(false) }, pdoc_export_manager_utils_1.PDocExportManagerUtils.createExportValidationRules(), pdoc_export_manager_utils_1.PDocExportManagerUtils.createPDocSearchFormValidationRules());
+        return __assign({ action: new generic_validator_util_1.KeywordValidationRule(true), backend: new generic_validator_util_1.SimpleConfigFilePathValidationRule(true), sitemap: new generic_validator_util_1.SimpleConfigFilePathValidationRule(true), baseUrl: new generic_validator_util_1.HtmlValidationRule(false), queryParams: new generic_validator_util_1.HtmlValidationRule(false), generateMergedPdf: new generic_validator_util_1.WhiteListValidationRule(false, [true, false, 'true', 'false'], false), addPageNumsStartingWith: new generic_validator_util_1.NumberValidationRule(false, -1, 99999, 0), trimEmptyPages: new generic_validator_util_1.WhiteListValidationRule(false, [true, false, 'true', 'false'], true), tocTemplate: new generic_validator_util_1.SimpleFilePathValidationRule(false), width: new generic_validator_util_1.NumberValidationRule(false, 100, 10000, 1210), delay: new generic_validator_util_1.NumberValidationRule(false, 1000, 999999, 10000), destFile: new generic_validator_util_1.SimpleFilePathValidationRule(false), srcFiles: new generic_validator_util_1.SimpleFilePathListValidationRule(false) }, pdoc_export_manager_utils_1.PDocExportManagerUtils.createExportValidationRules(), pdoc_export_manager_utils_1.PDocExportManagerUtils.createPDocSearchFormValidationRules());
     };
     PDocPdfManagerCommand.prototype.definePossibleActions = function () {
         return [
@@ -82,7 +82,8 @@ var PDocPdfManagerCommand = /** @class */ (function (_super) {
             addPageNumsStartingWith: argv['addPageNumsStartingWith'] !== undefined && Number(argv['addPageNumsStartingWith'])
                 ? Number(argv['addPageNumsStartingWith'])
                 : undefined,
-            trimEmptyPages: argv['trimEmptyPages'] !== undefined && argv['trimEmptyPages'] !== false,
+            trimEmptyPages: argv['trimEmptyPages'] !== undefined
+                && argv['trimEmptyPages'] !== false && argv['trimEmptyPages'] !== 'false',
             tocTemplate: argv['tocTemplate'] !== undefined && argv['tocTemplate'].length > 1
                 ? argv['tocTemplate'] + ''
                 : undefined
@@ -97,6 +98,8 @@ var PDocPdfManagerCommand = /** @class */ (function (_super) {
         var exportPdfsType = this.getExportTypeFromAction(action);
         var exportDir = argv['exportDir'];
         var exportName = argv['exportName'];
+        var width = argv['width'] || 1210;
+        var delay = argv['delay'] || 10000;
         var destFile = argv['destFile'];
         var srcFiles = argv['srcFiles']
             ? argv['srcFiles'].split(',')
@@ -124,7 +127,7 @@ var PDocPdfManagerCommand = /** @class */ (function (_super) {
                 if (destFile === undefined) {
                     return Promise.reject('ERROR - parameters required destFile');
                 }
-                promise = pdfManager.webshot2Pdf(baseUrl, destFile);
+                promise = pdfManager.webshot2Pdf(baseUrl, destFile, width, delay);
                 break;
             case 'generateDefaultPagePdfs':
                 console.log('DO generate searchform for : ' + action, processingOptions);
