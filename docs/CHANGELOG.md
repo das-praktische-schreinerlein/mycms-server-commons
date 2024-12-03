@@ -6,9 +6,10 @@
 - bumped version up to be in sync with mycms-frontend-commons, mycms-commons
 - interpret parameter loadDetailsMode of GenericSearchOptions on server-request
 - improved pdf-generation
+- added CommonDocPdfResultListDecorator for generating pdf-resultlist
 
 ### new features
-- none
+- added CommonDocPdfResultListDecorator for generating pdf-resultlist
 
 ### improvements
 - improved pdf-generation

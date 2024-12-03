@@ -1,10 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = require("fs");
+var cdoc_pdf_resultlist_decorator_1 = require("./cdoc-pdf-resultlist-decorator");
 var CommonDocPdfManagerModule = /** @class */ (function () {
-    function CommonDocPdfManagerModule(dataService, pdfManager) {
+    function CommonDocPdfManagerModule(dataService, pdfManager, resultListDecorator) {
         this.dataService = dataService;
         this.pdfManager = pdfManager;
+        this.resultListDecorator = resultListDecorator !== undefined
+            ? resultListDecorator
+            : new cdoc_pdf_resultlist_decorator_1.CommonDocPdfResultListDecorator();
     }
     CommonDocPdfManagerModule.prototype.generatePdfs = function (action, generateDir, generateName, baseUrl, queryParams, processingOptions, searchForm, force) {
         var _this = this;
@@ -124,7 +128,7 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
         var exportResults = [];
         var exportCallback = function (mdoc) {
             return [
-                me.exportCommonDocRecordPdfFile(mdoc, action, exportDir, exportName, processingOptions)
+                me.exportCommonDocRecordPdfFile(mdoc, action, exportDir, exportName, processingOptions, force)
             ];
         };
         return this.dataService.batchProcessSearchResult(searchForm, exportCallback, {
@@ -151,31 +155,25 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
         });
     };
     CommonDocPdfManagerModule.prototype.generatePdfResultListLstFile = function (exportDir, exportName, generateResults, processingOptions) {
+        var _this = this;
         var exportListFile = exportDir + '/' + exportName + '-toc.lst';
         if (fs.existsSync(exportListFile) && !fs.statSync(exportListFile).isFile()) {
             return Promise.reject('exportBaseFileName must be file');
         }
-        var fileList = generateResults.map(function (value) {
-            return [value.exportFileEntry, value.record.name, value.record.type, ''].join('\t');
-        }).join('\n');
+        var fileList = generateResults.map(function (value) { return _this.resultListDecorator.generatePdfResultListLstEntry(value); })
+            .join('\n');
         fs.writeFileSync(exportListFile, fileList);
         console.log('wrote fileList', exportListFile);
         return Promise.resolve(generateResults);
     };
     CommonDocPdfManagerModule.prototype.generatePdfResultListHtmlFile = function (exportDir, exportName, generateResults, processingOptions) {
+        var _this = this;
         var exportHtmlFile = exportDir + '/' + exportName + '-toc.html';
         if (fs.existsSync(exportHtmlFile) && !fs.statSync(exportHtmlFile).isFile()) {
             return Promise.reject('exportBaseFileName must be file');
         }
-        var htmlFileList = generateResults.map(function (value) {
-            var fileName = value.exportFileEntry;
-            var name = value.record.name;
-            var rtype = value.record.type;
-            return "<div class='bookmark_line bookmark_line_$rtype'><div class='bookmark_file'><a href=\"$fileName\" target=\"_blank\">$fileName</a></div><div class='bookmark_name'><a href=\"$fileName\" target=\"_blank\">$name</a></div><div class='bookmark_page'></div></div>"
-                .replace(/\$fileName/g, fileName)
-                .replace(/\$name/g, name)
-                .replace(/\$rtype/g, rtype);
-        }).join('\n');
+        var htmlFileList = generateResults.map(function (value) { return _this.resultListDecorator.generatePdfResultListHtmlEntry(value); })
+            .join('\n');
         if (processingOptions.tocTemplate) {
             try {
                 var html = fs.readFileSync(processingOptions.tocTemplate, { encoding: 'utf8' });

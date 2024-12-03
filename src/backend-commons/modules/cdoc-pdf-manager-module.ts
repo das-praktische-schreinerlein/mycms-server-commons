@@ -6,6 +6,7 @@ import {CommonDocDataService} from '@dps/mycms-commons/dist/search-commons/servi
 import {CommonDocSearchForm} from '@dps/mycms-commons/dist/search-commons/model/forms/cdoc-searchform';
 import {CommonDocSearchResult} from '@dps/mycms-commons/dist/search-commons/model/container/cdoc-searchresult';
 import {PdfManager} from '../../media-commons/modules/pdf-manager';
+import {CommonDocPdfResultListDecorator} from './cdoc-pdf-resultlist-decorator';
 
 export interface PdfExportProcessingOptions {
     generateMergedPdf?: boolean;
@@ -20,10 +21,14 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
 
     protected dataService: DS;
     protected pdfManager: PdfManager;
+    protected resultListDecorator: CommonDocPdfResultListDecorator;
 
-    constructor(dataService: DS, pdfManager: PdfManager) {
+    constructor(dataService: DS, pdfManager: PdfManager, resultListDecorator?: CommonDocPdfResultListDecorator) {
         this.dataService = dataService;
         this.pdfManager = pdfManager;
+        this.resultListDecorator = resultListDecorator !== undefined
+            ? resultListDecorator
+            : new CommonDocPdfResultListDecorator();
     }
 
     public generatePdfs(action: string, generateDir: string, generateName: string, baseUrl: string, queryParams: string,
@@ -169,7 +174,7 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
         const exportResults: ExportProcessingResult<CommonDocRecord>[] = [];
         const exportCallback = function (mdoc: CommonDocRecord): Promise<{}>[] {
             return [
-                me.exportCommonDocRecordPdfFile(mdoc, action, exportDir, exportName, processingOptions)
+                me.exportCommonDocRecordPdfFile(mdoc, action, exportDir, exportName, processingOptions, force)
             ];
         };
 
@@ -184,7 +189,7 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
     }
 
     protected abstract exportCommonDocRecordPdfFile(mdoc: CommonDocRecord, action: string, exportDir: string, exportName: string,
-                                                    processingOptions: PdfExportProcessingOptions & ProcessingOptions): Promise<ExportProcessingResult<CommonDocRecord>>;
+                                                    processingOptions: PdfExportProcessingOptions & ProcessingOptions, force?: boolean): Promise<ExportProcessingResult<CommonDocRecord>>;
 
 
     protected abstract generatePdfFileName(entity: CommonDocRecord): string;
@@ -217,9 +222,8 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
             return Promise.reject('exportBaseFileName must be file');
         }
 
-        const fileList = generateResults.map(value => {
-            return [value.exportFileEntry, value.record.name,  value.record.type, ''].join('\t')
-        }).join('\n');
+        const fileList = generateResults.map(value => this.resultListDecorator.generatePdfResultListLstEntry(value))
+            .join('\n');
 
         fs.writeFileSync(exportListFile, fileList);
         console.log('wrote fileList', exportListFile);
@@ -235,15 +239,8 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
             return Promise.reject('exportBaseFileName must be file');
         }
 
-        let htmlFileList = generateResults.map(value => {
-            const fileName = value.exportFileEntry;
-            const name = value.record.name;
-            const rtype = value.record.type;
-            return `<div class='bookmark_line bookmark_line_$rtype'><div class='bookmark_file'><a href="$fileName" target="_blank">$fileName</a></div><div class='bookmark_name'><a href="$fileName" target="_blank">$name</a></div><div class='bookmark_page'></div></div>`
-                .replace(/\$fileName/g, fileName)
-                .replace(/\$name/g, name)
-                .replace(/\$rtype/g, rtype);
-        }).join('\n');
+        let htmlFileList = generateResults.map(value => this.resultListDecorator.generatePdfResultListHtmlEntry(value))
+            .join('\n');
 
         if (processingOptions.tocTemplate) {
             try {
