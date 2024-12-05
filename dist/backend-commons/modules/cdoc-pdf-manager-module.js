@@ -42,7 +42,7 @@ var CommonDocPdfManagerModule = /** @class */ (function () {
             ];
         };
         return this.dataService.batchProcessSearchResult(searchForm, generateCallback, {
-            loadDetailsMode: undefined,
+            loadDetailsMode: 'full',
             loadTrack: false,
             showFacets: false,
             showForm: false

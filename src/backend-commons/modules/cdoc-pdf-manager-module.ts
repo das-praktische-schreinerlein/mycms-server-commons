@@ -72,7 +72,7 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
         };
 
         return this.dataService.batchProcessSearchResult(searchForm, generateCallback, {
-            loadDetailsMode: undefined,
+            loadDetailsMode: 'full',
             loadTrack: false,
             showFacets: false,
             showForm: false
