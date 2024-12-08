@@ -6,10 +6,12 @@ import { CommonDocSearchResult } from '@dps/mycms-commons/dist/search-commons/mo
 import { CommonDocDataService } from '@dps/mycms-commons/dist/search-commons/services/cdoc-data.service';
 import { CacheConfig, DataCacheModule } from '../../server-commons/datacache.module';
 import { CommonBackendConfigType, CommonKeywordMapperConfigType } from './backend.commons';
+import { KeyParamsValidationRule } from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
 export declare abstract class CommonDocServerModule<R extends CommonDocRecord, F extends CommonDocSearchForm, S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>> {
     protected dataService: D;
     protected cache: DataCacheModule;
     idValidationRule: IdValidationRule;
+    optionalProfileValidationRule: KeyParamsValidationRule;
     static configureServerRoutes(app: express.Application, apiPrefix: string, cdocServerModule: CommonDocServerModule<CommonDocRecord, CommonDocSearchForm, CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>, CommonDocDataService<CommonDocRecord, CommonDocSearchForm, CommonDocSearchResult<CommonDocRecord, CommonDocSearchForm>>>, cache: DataCacheModule, backendConfig: any | CommonBackendConfigType<CommonKeywordMapperConfigType, CacheConfig>): void;
     constructor(dataService: D, cache: DataCacheModule);
     getById(req: any, next: any, id: any): Promise<S>;

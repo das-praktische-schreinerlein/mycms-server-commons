@@ -3,11 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var generic_validator_util_1 = require("@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util");
 var facets_1 = require("@dps/mycms-commons/dist/search-commons/model/container/facets");
 var js_data_1 = require("js-data");
+var generic_validator_util_2 = require("@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util");
 var CommonDocServerModule = /** @class */ (function () {
     function CommonDocServerModule(dataService, cache) {
         this.dataService = dataService;
         this.cache = cache;
         this.idValidationRule = new generic_validator_util_1.IdValidationRule(true);
+        this.optionalProfileValidationRule = new generic_validator_util_2.KeyParamsValidationRule(false);
     }
     CommonDocServerModule.configureServerRoutes = function (app, apiPrefix, cdocServerModule, cache, backendConfig) {
         // configure express
@@ -76,14 +78,22 @@ var CommonDocServerModule = /** @class */ (function () {
                     searchOptions_1.showFacets = true;
                 }
                 else if (req.query['showFacets'] !== undefined) {
-                    // FIXME - validate this
+                    if (!cdocServerModule.optionalProfileValidationRule.isValid(req.query['showFacets'])) {
+                        res.json((cdocServerModule.getDataService().newSearchResult(searchForm, 0, [], new facets_1.Facets())
+                            .toSerializableJsonObj()));
+                        return next();
+                    }
                     searchOptions_1.showFacets = req.query['showFacets'].toString().split(',');
                 }
                 if (req.query['loadDetailsMode'] === false || req.query['loadDetailsMode'] === 'false') {
                     searchOptions_1.loadDetailsMode = 'none';
                 }
                 else if (req.query['loadDetailsMode'] !== undefined) {
-                    // FIXME - validate this
+                    if (!cdocServerModule.optionalProfileValidationRule.isValid(req.query['loadDetailsMode'])) {
+                        res.json((cdocServerModule.getDataService().newSearchResult(searchForm, 0, [], new facets_1.Facets())
+                            .toSerializableJsonObj()));
+                        return next();
+                    }
                     searchOptions_1.loadDetailsMode = req.query['loadDetailsMode'];
                 }
                 cdocServerModule.getDataService().search(searchForm, searchOptions_1).then(function searchDone(searchResult) {

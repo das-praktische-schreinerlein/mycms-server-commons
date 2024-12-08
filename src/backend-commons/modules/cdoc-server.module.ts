@@ -12,10 +12,12 @@ import {CommonDocSearchResult} from '@dps/mycms-commons/dist/search-commons/mode
 import {CommonDocDataService} from '@dps/mycms-commons/dist/search-commons/services/cdoc-data.service';
 import {CacheConfig, DataCacheModule} from '../../server-commons/datacache.module';
 import {CommonBackendConfigType, CommonKeywordMapperConfigType} from './backend.commons';
+import {KeyParamsValidationRule} from '@dps/mycms-commons/dist/search-commons/model/forms/generic-validator.util';
 
 export abstract class CommonDocServerModule<R extends CommonDocRecord, F extends CommonDocSearchForm,
     S extends CommonDocSearchResult<R, F>, D extends CommonDocDataService<R, F, S>> {
     public idValidationRule = new IdValidationRule(true);
+    public optionalProfileValidationRule = new KeyParamsValidationRule(false);
 
     public static configureServerRoutes(app: express.Application, apiPrefix: string,
                                         cdocServerModule: CommonDocServerModule<CommonDocRecord, CommonDocSearchForm,
@@ -93,14 +95,24 @@ export abstract class CommonDocServerModule<R extends CommonDocRecord, F extends
                     } else if (req.query['showFacets'] === 'true') {
                         searchOptions.showFacets = true;
                     } else if (req.query['showFacets'] !== undefined) {
-                        // FIXME - validate this
+                        if (!cdocServerModule.optionalProfileValidationRule.isValid(req.query['showFacets'])) {
+                            res.json((cdocServerModule.getDataService().newSearchResult(searchForm, 0, [], new Facets())
+                                .toSerializableJsonObj()));
+                            return next();
+                        }
+
                         searchOptions.showFacets = req.query['showFacets'].toString().split(',');
                     }
 
                     if (req.query['loadDetailsMode'] === false || req.query['loadDetailsMode'] === 'false') {
                         searchOptions.loadDetailsMode = 'none';
                     } else if (req.query['loadDetailsMode'] !== undefined) {
-                        // FIXME - validate this
+                        if (!cdocServerModule.optionalProfileValidationRule.isValid(req.query['loadDetailsMode'])) {
+                            res.json((cdocServerModule.getDataService().newSearchResult(searchForm, 0, [], new Facets())
+                                .toSerializableJsonObj()));
+                            return next();
+                        }
+
                         searchOptions.loadDetailsMode = req.query['loadDetailsMode'];
                     }
 
