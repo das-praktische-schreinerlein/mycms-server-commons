@@ -130,7 +130,7 @@ export abstract class CommonDocPdfManagerModule<DS extends CommonDocDataService<
                     mediaFileMappings: undefined
                 };
 
-                if (mdoc['pdfFile'] !== fileName) {
+                if (processingOptions.updatePdfEntity && mdoc['pdfFile'] !== fileName) {
                     return me.updatePdfEntity(mdoc, fileName).then(() => {
                         resolve(generateResult);
                     }).catch(err => {
