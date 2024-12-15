@@ -115,7 +115,7 @@ export abstract class CommonDocServerModule<R extends CommonDocRecord, F extends
                             return next();
                         }
 
-                        searchOptions.loadDetailsMode = loadDetailsModeValue.split(',');
+                        searchOptions.loadDetailsMode = loadDetailsModeValue;
                     }
 
                     cdocServerModule.getDataService().search(searchForm, searchOptions).then(

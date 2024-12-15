@@ -96,7 +96,7 @@ var CommonDocServerModule = /** @class */ (function () {
                             .toSerializableJsonObj()));
                         return next();
                     }
-                    searchOptions_1.loadDetailsMode = loadDetailsModeValue.split(',');
+                    searchOptions_1.loadDetailsMode = loadDetailsModeValue;
                 }
                 cdocServerModule.getDataService().search(searchForm, searchOptions_1).then(function searchDone(searchResult) {
                     if (searchOptions_1.showForm === false) {
