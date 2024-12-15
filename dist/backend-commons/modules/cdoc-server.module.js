@@ -78,23 +78,25 @@ var CommonDocServerModule = /** @class */ (function () {
                     searchOptions_1.showFacets = true;
                 }
                 else if (req.query['showFacets'] !== undefined) {
-                    if (!cdocServerModule.optionalProfileValidationRule.isValid(req.query['showFacets'])) {
+                    var facetsValue = req.query['showFacets'].toString();
+                    if (!cdocServerModule.optionalProfileValidationRule.isValid(facetsValue)) {
                         res.json((cdocServerModule.getDataService().newSearchResult(searchForm, 0, [], new facets_1.Facets())
                             .toSerializableJsonObj()));
                         return next();
                     }
-                    searchOptions_1.showFacets = req.query['showFacets'].toString().split(',');
+                    searchOptions_1.showFacets = facetsValue.split(',');
                 }
                 if (req.query['loadDetailsMode'] === false || req.query['loadDetailsMode'] === 'false') {
                     searchOptions_1.loadDetailsMode = 'none';
                 }
                 else if (req.query['loadDetailsMode'] !== undefined) {
-                    if (!cdocServerModule.optionalProfileValidationRule.isValid(req.query['loadDetailsMode'])) {
+                    var loadDetailsModeValue = req.query['loadDetailsMode'].toString();
+                    if (!cdocServerModule.optionalProfileValidationRule.isValid(loadDetailsModeValue)) {
                         res.json((cdocServerModule.getDataService().newSearchResult(searchForm, 0, [], new facets_1.Facets())
                             .toSerializableJsonObj()));
                         return next();
                     }
-                    searchOptions_1.loadDetailsMode = req.query['loadDetailsMode'];
+                    searchOptions_1.loadDetailsMode = loadDetailsModeValue.split(',');
                 }
                 cdocServerModule.getDataService().search(searchForm, searchOptions_1).then(function searchDone(searchResult) {
                     if (searchOptions_1.showForm === false) {

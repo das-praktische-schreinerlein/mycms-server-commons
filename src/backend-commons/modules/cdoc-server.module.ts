@@ -95,25 +95,27 @@ export abstract class CommonDocServerModule<R extends CommonDocRecord, F extends
                     } else if (req.query['showFacets'] === 'true') {
                         searchOptions.showFacets = true;
                     } else if (req.query['showFacets'] !== undefined) {
-                        if (!cdocServerModule.optionalProfileValidationRule.isValid(req.query['showFacets'])) {
+                        const facetsValue =  req.query['showFacets'].toString();
+                        if (!cdocServerModule.optionalProfileValidationRule.isValid(facetsValue)) {
                             res.json((cdocServerModule.getDataService().newSearchResult(searchForm, 0, [], new Facets())
                                 .toSerializableJsonObj()));
                             return next();
                         }
 
-                        searchOptions.showFacets = req.query['showFacets'].toString().split(',');
+                        searchOptions.showFacets = facetsValue.split(',');
                     }
 
                     if (req.query['loadDetailsMode'] === false || req.query['loadDetailsMode'] === 'false') {
                         searchOptions.loadDetailsMode = 'none';
                     } else if (req.query['loadDetailsMode'] !== undefined) {
-                        if (!cdocServerModule.optionalProfileValidationRule.isValid(req.query['loadDetailsMode'])) {
+                        const loadDetailsModeValue =  req.query['loadDetailsMode'].toString();
+                        if (!cdocServerModule.optionalProfileValidationRule.isValid(loadDetailsModeValue)) {
                             res.json((cdocServerModule.getDataService().newSearchResult(searchForm, 0, [], new Facets())
                                 .toSerializableJsonObj()));
                             return next();
                         }
 
-                        searchOptions.loadDetailsMode = req.query['loadDetailsMode'];
+                        searchOptions.loadDetailsMode = loadDetailsModeValue.split(',');
                     }
 
                     cdocServerModule.getDataService().search(searchForm, searchOptions).then(
