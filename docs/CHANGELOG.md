@@ -2,6 +2,22 @@
  
 # Versions
 
+## 6.3.0
+- none
+
+### new features
+- none
+
+### improvements
+- none
+
+### bug fixes
+- none
+
+### breaking changes
+- none
+
+
 ## 6.2.0 (2025-01-27)
 - bumped version up to be in sync with mycms-frontend-commons, mycms-commons
 - interpret parameter loadDetailsMode of GenericSearchOptions on server-request
