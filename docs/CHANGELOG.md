@@ -2,7 +2,7 @@
  
 # Versions
 
-## 6.2.0
+## 6.2.0 (2025-01-27)
 - bumped version up to be in sync with mycms-frontend-commons, mycms-commons
 - interpret parameter loadDetailsMode of GenericSearchOptions on server-request
 - improved pdf-generation
