@@ -3,7 +3,7 @@
 # Versions
 
 ## 6.3.0
-- none
+- bumped version up to be in sync with mycms-frontend-commons, mycms-commons
 
 ### new features
 - none
